@@ -10,8 +10,8 @@ Gridea 主页
 特性👇
 📝  你可以使用最酷的 Markdo..." />
     <meta name="keywords" content="Gridea" />
-    <link rel="stylesheet" href="https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/media/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/styles/main.css">
+    <link rel="stylesheet" href="https://jiekeaoteman.github.io/media/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://jiekeaoteman.github.io/styles/main.css">
     
     <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.18.1/build/styles/default.min.css">
     
@@ -23,7 +23,7 @@ Gridea 主页
     <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.13.1/css/all.min.css" rel="stylesheet">
     <!-- 数学公式 -->
     
-    <title>Gridea</title>
+    <title>Jiekeaoteman's Blog</title>
     
     <style>
         .markdownIt-TOC {
@@ -45,7 +45,7 @@ Gridea 主页
         <canvas id="live2d" width="240" height="250" class="live2d"></canvas>
     </div>
     <div id="codeCopyText" style="display: none">代码复制成功了哦</div>
-    <div id="domainname" style="display:none">https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com</div>
+    <div id="domainname" style="display:none">https://jiekeaoteman.github.io</div>
     <!-- 响应式布局，针对PC端内容显示 -->
     <div id="content">
         <div>
@@ -82,7 +82,7 @@ Gridea 主页
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com">Gridea&nbsp;&nbsp;|</a>
+        <a class="navbar-brand" href="https://jiekeaoteman.github.io">Jiekeaoteman&#39;s Blog&nbsp;&nbsp;|</a>
         <span class="navbar-brand mbapspan"><i id="mbaplayer" class="fa fa-play-circle-o" aria-hidden="true"
             style="font-size: 28px;top: 12px;position: absolute;" onclick="aplayerPlay();"></i></span>
       </div>
@@ -125,7 +125,7 @@ Gridea 主页
           
           
           
-          <li><a href="https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/friends">友链</a></li>
+          <li><a href="https://jiekeaoteman.github.io/friends">友链</a></li>
 
           
         </ul>
@@ -170,10 +170,10 @@ Gridea 主页
     
     <div id=side>
         <div class="avatar-border">
-            <img src="https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/images/avatar.png?v=1605611999236" class="avatar">
+            <img src="https://jiekeaoteman.github.io/images/avatar.png?v=1605616476992" class="avatar">
         </div>
-        <div class="sitename">Gridea</div>
-        <span class="describtion" data-text='["jiekeaoteman's blog"]'>&nbsp;</span>
+        <div class="sitename">Jiekeaoteman&#39;s Blog</div>
+        <span class="describtion" data-text='["十步一代码，千里不bug"]'>&nbsp;</span>
         
         <div class="search">
             <!-- <input type="text" class="search-input" placeholder="标题搜索(●'◡'●)" /> -->
@@ -184,13 +184,18 @@ Gridea 主页
     <div class="share-button">
         <span>社交按钮</span>
         
+        <a href="https://github.com/jiekeaoteman" target="_blank"><i style="font-size: 20px;"><img class="icon"
+                    src="https://jiekeaoteman.github.io/media/images/github.png" alt=""></i></a>
+        
+        
+        <a onclick="showqq()"><i style="font-size: 20px;"><img class="icon" src="https://jiekeaoteman.github.io/media/images/QQ.png" alt=""></i></a>
         
         
         
         
         
     </div>
-    <div id="qq" style="display:none"></div>
+    <div id="qq" style="display:none">2543451724</div>
     
     
     <div class="mchocie describtion">
@@ -227,18 +232,53 @@ Gridea 主页
     
     
     <div class="mchocie describtion">
-        <a href="https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/friends" class="menubutton">友人帐</a>
+        <a href="https://jiekeaoteman.github.io/friends" class="menubutton">友人帐</a>
     </div>
     
     <hr>
     <div id="footinfo">Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | Theme: <a
         href="https://github.com/850552586/gridea-theme-fog">Fog</a></div>
     
+    <div class="sitetime"><div id="sitegotimeDate">载入天数...</div>
+    <div id="sitegotimes">载入时分秒...</div></div>
+    <div id="cussitetime" style="display:none">17/11/2020</div>
+    
     
     </div>
 
 
-<script src="https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/media/js/wordshow.js"></script>
+<script src="https://jiekeaoteman.github.io/media/js/wordshow.js"></script>
+    
+    <script>
+        //----------------------站点运行时间
+        var now = new Date();
+
+        function createtime() {
+            var sitegotime = document.getElementById("cussitetime").innerHTML + " 00:00:00";
+            var grt = new Date(sitegotime); //此处修改你的建站时间或者网站上线时间
+            now.setTime(now.getTime() + 250);
+            days = (now - grt) / 1000 / 60 / 60 / 24;
+            dnum = Math.floor(days);
+            hours = (now - grt) / 1000 / 60 / 60 - (24 * dnum);
+            hnum = Math.floor(hours);
+            if (String(hnum).length == 1) {
+                hnum = "0" + hnum;
+            }
+            minutes = (now - grt) / 1000 / 60 - (24 * 60 * dnum) - (60 * hnum);
+            mnum = Math.floor(minutes);
+            if (String(mnum).length == 1) {
+                mnum = "0" + mnum;
+            }
+            seconds = (now - grt) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+            snum = Math.round(seconds);
+            if (String(snum).length == 1) {
+                snum = "0" + snum;
+            }
+            document.getElementById("sitegotimeDate").innerHTML = "本站已安全运行 " + dnum + " 天 ";
+            document.getElementById("sitegotimes").innerHTML = hnum + " 小时 " + mnum + " 分 " + snum + " 秒";
+        }
+        setInterval("createtime()", 250);
+    </script>
     
 
 
@@ -388,21 +428,21 @@ Gridea 主页
                 </div>
                 <div class="col-md-1 col-lg-3"></div>
                 <div id="main" class="col-xs-12 col-sm-12 col-md-10 col-lg-7">
-                    <link rel="stylesheet" href="https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/media/css/font-awesome.css">
+                    <link rel="stylesheet" href="https://jiekeaoteman.github.io/media/css/font-awesome.css">
 
 <body>
     <div class="allcontent" id="postdetail">
         <div class="postshow" style="padding-bottom: 0;">
             
             <div class="postdetailimg" style="width:100%;overflow: hidden;">
-                <img src="https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/post-images/hello-gridea.png" class="postimage" style="cursor:auto">
+                <img src="https://jiekeaoteman.github.io/post-images/hello-gridea.png" class="postimage" style="cursor:auto">
             </div>
             <div class="postinfo-detail">
                 <div class="postdate"><i class="fa fa-calendar"></i>2018-12-12</div>
                 <div class="poststatus postdate"><i class="fa fa-clock-o"></i> 2 min read</div>
                 <div class="posttag">
                     
-                    <a href="https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/tag/L4w3qaIdj/" class="postlink">
+                    <a href="https://jiekeaoteman.github.io/tag/L4w3qaIdj/" class="postlink">
                         <i class="fa fa-tag"></i> Gridea
                     </a>
                     
@@ -413,8 +453,8 @@ Gridea 主页
             <div id="texttitle" style="text-align: center">
                 <h2>Hello Gridea</h2>
                 <!-- id 将作为查询条件 -->
-                <div id="pl" style="display:none">https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/post/hello-gridea/</div>
-                <div id="rootaddr" style="display:none">https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com</div>
+                <div id="pl" style="display:none">https://jiekeaoteman.github.io/post/hello-gridea/</div>
+                <div id="rootaddr" style="display:none">https://jiekeaoteman.github.io</div>
                 <span id="hotnum">
                     <h4><i class="fa fa-eye" aria-hidden="true" style="color: #FF8C00;"></i>&nbsp;&nbsp;热度</i>: <i
                             class="hotnum">loading...</i></h4>
@@ -452,25 +492,25 @@ Gridea 主页
             <div class="shareContainer">
                 <div class="share" style="height:30px;background: white;">
                     <a class="qq" href=""><i><img class="shareicon"
-                                src="https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/media/images/QQ.png" alt=""></i></a>
+                                src="https://jiekeaoteman.github.io/media/images/QQ.png" alt=""></i></a>
                     <a class="wechat" href=""><i><img class="shareicon"
-                                src="https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/media/images/wechat.png" alt=""></i></a>
+                                src="https://jiekeaoteman.github.io/media/images/wechat.png" alt=""></i></a>
                     <a class="weibo" href=""><i><img class="shareicon"
-                                src="https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/media/images/weibo.png" alt=""></i></a>
+                                src="https://jiekeaoteman.github.io/media/images/weibo.png" alt=""></i></a>
                     <a class="qzone" href=""><i><img class="shareicon"
-                                src="https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/media/images/qzone.png" alt=""></i></a>
+                                src="https://jiekeaoteman.github.io/media/images/qzone.png" alt=""></i></a>
                     <a class="douban" href=""><i><img class="shareicon"
-                                src="https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/media/images/douban.png" alt=""></i></a>
+                                src="https://jiekeaoteman.github.io/media/images/douban.png" alt=""></i></a>
                     <a class="facebook" href=""><i><img class="shareicon"
-                                src="https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/media/images/facebook.png" alt=""></i></a>
+                                src="https://jiekeaoteman.github.io/media/images/facebook.png" alt=""></i></a>
                     <a class="twitter" href=""><i><img class="shareicon"
-                                src="https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/media/images/twitter.png" alt=""></i></a>
+                                src="https://jiekeaoteman.github.io/media/images/twitter.png" alt=""></i></a>
                 </div>
             </div>
             
             
             <div class="donateContainer">
-                <img src="https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/media/images/donate.png" alt="" class="donateImg">
+                <img src="https://jiekeaoteman.github.io/media/images/donate.png" alt="" class="donateImg">
             </div>
             <div class="donateContainer">
                 <img src="" alt="" class="donate">
@@ -479,12 +519,26 @@ Gridea 主页
             <div class="postfooter">
                 <ul class="post-copyright">
                     <li><strong>文章作者：</strong></li>
-            <li><strong>原文链接：</strong>https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/post/hello-gridea/</li>
+            <li><strong>原文链接：</strong>https://jiekeaoteman.github.io/post/hello-gridea/</li>
             <li><strong>版权声明：</strong>本博客所有文章除特别声明外，均采用<i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA
                 许可协议。转载请注明出处！</li>
             </ul>
         </div>
         <div id="otherpost">
+            
+            <div class="prev-post-pc">
+                <div id="ppcontainer" onclick="window.location.href= 'https://jiekeaoteman.github.io/post/test-md-yu-fa/';return false">
+                    
+                    
+                    <img src="" style="width: 100%;" class="opimg">
+                    
+                    
+                    <h4 class="optitle">Test-md语法</h4>
+                </div>
+            </div>
+            <div class="prev-post">
+                上一篇 <a href="https://jiekeaoteman.github.io/post/test-md-yu-fa/">Test-md语法</a>
+            </div>
             
             
         </div>
@@ -520,7 +574,7 @@ Gridea 主页
 <body>
     <div id="vcomments">
     </div>
-    <script src="https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/media/js/valine.min.js"></script>
+    <script src="https://jiekeaoteman.github.io/media/js/valine.min.js"></script>
     <!-- <script src="https://unpkg.com/valine/dist/Valine.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js"></script>
     <script src="https://sdk.jinrishici.com/v2/browser/jinrishici.js" charset="utf-8"></script>
@@ -583,7 +637,7 @@ Gridea 主页
             </div>
         </div>
     </div>
-    <div id="bgchoice" style="display: none"></div>
+    <div id="bgchoice" style="display: none">link</div>
     
     <div id="bgurl" style="display:none"></div>
     
@@ -642,9 +696,9 @@ Gridea 主页
     var home_Path = document.getElementById("domainname").innerHTML + "/"; //此处修改为你的域名，必须带斜杠
 </script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/850552586/ericamcdn@0.1/js/live2d.js"></script>
-<script type="text/javascript" src="https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/media/live2d/js/message.js"></script>
+<script type="text/javascript" src="https://jiekeaoteman.github.io/media/live2d/js/message.js"></script>
 <script type="text/javascript">
-    loadlive2d("live2d", "https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/media/live2d/assets/tororo.model.json");
+    loadlive2d("live2d", "https://jiekeaoteman.github.io/media/live2d/assets/tororo.model.json");
 </script>
 
 <script>
@@ -676,7 +730,7 @@ Gridea 主页
 </script>
 
 
-<script src="https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/media/js/index.js"></script>
+<script src="https://jiekeaoteman.github.io/media/js/index.js"></script>
 
 
 
@@ -691,7 +745,7 @@ Gridea 主页
     op.css("height", npheight);
 </script>
 
-<script src="https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/media/share/dist/Share.js"></script>
+<script src="https://jiekeaoteman.github.io/media/share/dist/Share.js"></script>
 
 <script>
     var avatarSrc = $(".avatar").attr("src");
@@ -780,7 +834,7 @@ Gridea 主页
     });
 </script>
 
-<!-- <script src="https://coding-pages-bucket-3490265-8028157-5204-376777-1304253194.cos-website.ap-hongkong.myqcloud.com/media/js/av-min.js"></script> -->
+<!-- <script src="https://jiekeaoteman.github.io/media/js/av-min.js"></script> -->
 <!-- <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@3.13.0/dist/av-min.js"></script> -->
 <!-- <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.6.1/dist/av-live-query-min.js"></script> -->
 
