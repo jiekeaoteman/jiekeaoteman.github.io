@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://jiekeaoteman.github.io</id>
     <title>Jiekeaoteman&apos;s Blog</title>
-    <updated>2020-11-21T14:28:30.922Z</updated>
+    <updated>2020-11-25T14:50:40.656Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://jiekeaoteman.github.io"/>
     <link rel="self" href="https://jiekeaoteman.github.io/atom.xml"/>
@@ -10,6 +10,19 @@
     <logo>https://jiekeaoteman.github.io/images/avatar.png</logo>
     <icon>https://jiekeaoteman.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Jiekeaoteman&apos;s Blog</rights>
+    <entry>
+        <title type="html"><![CDATA[Personal config and minor questions]]></title>
+        <id>https://jiekeaoteman.github.io/post/personal-config-and-minor-questions/</id>
+        <link href="https://jiekeaoteman.github.io/post/personal-config-and-minor-questions/">
+        </link>
+        <updated>2020-11-25T14:41:20.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="20201125">2020.11.25</h2>
+<p>发现虚拟机（ubuntu）不能上网，之后发现ifconfig后只有127.0.0.1一个</p>
+<p>解决：<code>sudo -i</code>   切换为root用户</p>
+<p>​           然后输入 <code>dhclient -v</code> 之后ifconfig成功出现另一个网络exit退出即可</p>
+<p><a href="https://blog.csdn.net/qq_40141862/article/details/86657408">参考链接</a></p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[创建个人博客的记录]]></title>
         <id>https://jiekeaoteman.github.io/post/chuang-jian-ge-ren-bo-ke-de-ji-lu/</id>
