@@ -166,7 +166,7 @@
     
     <div id=side>
         <div class="avatar-border">
-            <img src="https://jiekeaoteman.github.io/images/avatar.png?v=1606377614409" class="avatar">
+            <img src="https://jiekeaoteman.github.io/images/avatar.png?v=1608041941571" class="avatar">
         </div>
         <div class="sitename">Jiekeaoteman&#39;s Blog</div>
         <span class="describtion" data-text='["十步一代码，千里不bug"]'>&nbsp;</span>
@@ -470,6 +470,14 @@
 <p>解决：<code>sudo -i</code>   切换为root用户</p>
 <p>​           然后输入 <code>dhclient -v</code> 之后ifconfig成功出现另一个网络exit退出即可</p>
 <p><a href="https://blog.csdn.net/qq_40141862/article/details/86657408">参考链接</a></p>
+<h2 id="20201214">2020.12.14</h2>
+<p>（09-http）使用python写http服务器时，在谷歌浏览器使用百度搜索引擎访问服务器中带有中文的url时返回404</p>
+<p>解决：由于浏览器在向http服务器发送head时，其中的url若含有中文必须经过编码（在因特网上传送url，只能采用ASCII表）后发送，浏览器会自动编码，且每个字节前面会加上一个%，我在服务器中收到的路径中的中文部分就会变成如%e6%96%87%e7%ab%a0这样，无法打开相应文件，浏览器返回404</p>
+<p>可通过如下代码解决</p>
+<pre><code class="language-python">from urllib.parse import unquote
+unquote(&quot;%e6%96%87%e7%ab%a0&quot;), encoding=&quot;GBK&quot;
+</code></pre>
+<p><a href="https://www.zhihu.com/question/30098761">参考链接</a></p>
 
             </div>
             <hr style="width: 80%;">
@@ -609,6 +617,7 @@
 <li>
 <ul>
 <li><a href="#20201125">2020.11.25</a></li>
+<li><a href="#20201214">2020.12.14</a></li>
 </ul>
 </li>
 </ul>
