@@ -8,12 +8,14 @@ python版本：
 
 主要使用的包：numpy，cv2，
 一、 图像的处理
+以下都以这一帧的图像为例：
+
 
 
 图像的灰度化
 gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
-因为主要是检测出图像中的车道线..." />
+..." />
     <meta name="keywords" content="Python" />
     <link rel="stylesheet" href="https://jiekeaoteman.github.io/media/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://jiekeaoteman.github.io/styles/main.css">
@@ -175,7 +177,7 @@ gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     
     <div id=side>
         <div class="avatar-border">
-            <img src="https://jiekeaoteman.github.io/images/avatar.png?v=1623041268673" class="avatar">
+            <img src="https://jiekeaoteman.github.io/images/avatar.png?v=1623078308481" class="avatar">
         </div>
         <div class="sitename">Jiekeaoteman&#39;s Blog</div>
         <span class="describtion" data-text='["我有一禅，秀色可参。"]'>&nbsp;</span>
@@ -485,6 +487,8 @@ gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 <figure data-type="image" tabindex="2"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210604150217983.png" alt="image-20210604150217983" loading="lazy"></figure>
 <p>主要使用的包：numpy，cv2，</p>
 <h3 id="一-图像的处理">一、 图像的处理</h3>
+<p>以下都以这一帧的图像为例：</p>
+<figure data-type="image" tabindex="3"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/road2.jpg" alt="" loading="lazy"></figure>
 <ol>
 <li>
 <p>图像的灰度化</p>
@@ -504,7 +508,7 @@ kaiyunsuan = cv.morphologyEx(blur_gray, cv.MORPH_OPEN, kernel)  # 开运算
 <p>使用Canny算子进行边缘检测</p>
 <pre><code class="language-python">edges = cv.Canny(kaiyunsuan, self.canny_lthreshold, self.canny_hthreshold)
 </code></pre>
-<figure data-type="image" tabindex="3"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603211714378.png" alt="image-20210603211714378" loading="lazy"></figure>
+<figure data-type="image" tabindex="4"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603211714378.png" alt="image-20210603211714378" loading="lazy"></figure>
 </li>
 <li>
 <p>获取图像的主要检测区域</p>
@@ -520,8 +524,8 @@ kaiyunsuan = cv.morphologyEx(blur_gray, cv.MORPH_OPEN, kernel)  # 开运算
 </code></pre>
 <p>选择合适的区域进行检测有助于减少计算量</p>
 <p>本次选用的区域为如下图所示（三角形高为图像高的一半）</p>
-<figure data-type="image" tabindex="4"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603211802873.png" alt="image-20210603211802873" loading="lazy"></figure>
-<figure data-type="image" tabindex="5"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603211826300.png" alt="image-20210603211826300" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603211802873.png" alt="image-20210603211802873" loading="lazy"></figure>
+<figure data-type="image" tabindex="6"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603211826300.png" alt="image-20210603211826300" loading="lazy"></figure>
 </li>
 <li>
 <p>使用霍夫线检测获取图像中的直线，返回每条直线的端点坐标，</p>
@@ -529,7 +533,7 @@ kaiyunsuan = cv.morphologyEx(blur_gray, cv.MORPH_OPEN, kernel)  # 开运算
                                minLineLength=self.min_line_length, maxLineGap=self.max_line_gap)
         print(&quot;lines:&quot;, lines)
 </code></pre>
-<figure data-type="image" tabindex="6"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603212935405.png" alt="image-20210603212935405" loading="lazy"></figure>
+<figure data-type="image" tabindex="7"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603212935405.png" alt="image-20210603212935405" loading="lazy"></figure>
 </li>
 </ol>
 <p>根据其坐标算出直线斜率，并根据其平均斜率排除异常点，</p>
@@ -605,13 +609,13 @@ if len(right_points) &gt; 0:
 else:
     self.right_lane_xy = 0
 </code></pre>
-<figure data-type="image" tabindex="7"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603221033272.png" alt="image-20210603221033272" loading="lazy"></figure>
+<figure data-type="image" tabindex="8"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603221033272.png" alt="image-20210603221033272" loading="lazy"></figure>
 <ol start="6">
 <li>
 <p>将车道线与原图整合</p>
 <pre><code class="language-python">res_img = cv.addWeighted(gray, 0.8, line_img, 1, 0)  # 两个图片叠加显示
 </code></pre>
-<figure data-type="image" tabindex="8"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603222307615.png" alt="image-20210603222307615" loading="lazy"></figure>
+<figure data-type="image" tabindex="9"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603222307615.png" alt="image-20210603222307615" loading="lazy"></figure>
 </li>
 </ol>
 <h3 id="二-视频的处理">二、视频的处理</h3>
