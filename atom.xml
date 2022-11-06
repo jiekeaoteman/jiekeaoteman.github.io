@@ -1,0 +1,833 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://jiekeaoteman.github.io</id>
+    <title>Gridea</title>
+    <updated>2022-11-06T03:49:01.692Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://jiekeaoteman.github.io"/>
+    <link rel="self" href="https://jiekeaoteman.github.io/atom.xml"/>
+    <subtitle>温故而知新</subtitle>
+    <logo>https://jiekeaoteman.github.io/images/avatar.png</logo>
+    <icon>https://jiekeaoteman.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2022, Gridea</rights>
+    <entry>
+        <title type="html"><![CDATA[使用opencv+python实现道路的实时检测]]></title>
+        <id>https://jiekeaoteman.github.io/post/shi-yong-opencvpython-shi-xian-dao-lu-de-shi-shi-jian-ce/</id>
+        <link href="https://jiekeaoteman.github.io/post/shi-yong-opencvpython-shi-xian-dao-lu-de-shi-shi-jian-ce/">
+        </link>
+        <updated>2022-10-28T13:12:49.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="前言">前言 ：</h3>
+<p>使用的IDE：</p>
+<figure data-type="image" tabindex="1"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210606215835424.png" alt="image-20210606215835424" loading="lazy"></figure>
+<p>python版本：</p>
+<figure data-type="image" tabindex="2"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210604150217983.png" alt="image-20210604150217983" loading="lazy"></figure>
+<p>主要使用的包：numpy，cv2，</p>
+<h3 id="一-图像的处理">一、 图像的处理</h3>
+<p>以下都以这一帧的图像为例：</p>
+<figure data-type="image" tabindex="3"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/road2.jpg" alt="" loading="lazy"></figure>
+<ol>
+<li>
+<p>图像的灰度化</p>
+<pre><code class="language-python">gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+</code></pre>
+<p>因为主要是检测出图像中的车道线，所以没有必要使用三通道的彩图，将图像变为单通道的灰度图，以减少计算量</p>
+</li>
+<li>
+<p>使用高斯滤波和开运算对图像进行平滑处理，减少噪音</p>
+<pre><code class="language-python">blur_gray = cv.GaussianBlur(gray, (self.blur_ksize, self.blur_ksize), 0)  # 高斯模糊
+
+kernel = np.ones((5, 5), np.uint8)
+kaiyunsuan = cv.morphologyEx(blur_gray, cv.MORPH_OPEN, kernel)  # 开运算
+</code></pre>
+</li>
+<li>
+<p>使用Canny算子进行边缘检测</p>
+<pre><code class="language-python">edges = cv.Canny(kaiyunsuan, self.canny_lthreshold, self.canny_hthreshold)
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603211714378.png" alt="image-20210603211714378" loading="lazy"></figure>
+</li>
+<li>
+<p>获取图像的主要检测区域</p>
+<pre><code class="language-python">def getROI(self, img):
+    height = img.shape[0]
+    width = img.shape[1]
+    # triangle = np.array([[(int(width/5), height), (int(width/5)*4, height), (int(width / 2), int(height / 2))]])
+    triangle = np.array([[(0, height), (width, height), (int(width / 2), int(height / 2))]])
+    black_image = np.zeros_like(img)
+    mask = cv.fillPoly(black_image, triangle, 255)
+    masked_img = cv.bitwise_and(img, mask)
+    return masked_img
+</code></pre>
+<p>选择合适的区域进行检测有助于减少计算量</p>
+<p>本次选用的区域为如下图所示（三角形高为图像高的一半）</p>
+<figure data-type="image" tabindex="5"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603211802873.png" alt="image-20210603211802873" loading="lazy"></figure>
+<figure data-type="image" tabindex="6"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603211826300.png" alt="image-20210603211826300" loading="lazy"></figure>
+</li>
+<li>
+<p>使用霍夫线检测获取图像中的直线，返回每条直线的端点坐标，</p>
+<pre><code class="language-python">lines = cv.HoughLinesP(img, self.rho, self.theta, self.threshold, np.array([]),
+                               minLineLength=self.min_line_length, maxLineGap=self.max_line_gap)
+        print(&quot;lines:&quot;, lines)
+</code></pre>
+<figure data-type="image" tabindex="7"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603212935405.png" alt="image-20210603212935405" loading="lazy"></figure>
+</li>
+</ol>
+<p>根据其坐标算出直线斜率，并根据其平均斜率排除异常点，</p>
+<p>然后大致分出左右车道线，</p>
+<pre><code class="language-python">left_lines, right_lines = [], []
+        for line in lines:
+            for x1, y1, x2, y2 in line:
+                k = (y2 - y1) / (x2 - x1)
+                if k &lt; 0:
+                    left_lines.append(line)
+                    # print(&quot;左车道获得一组坐标&quot;)
+                else:
+                    right_lines.append(line)
+                    # print(&quot;右车道获得一组坐标&quot;)
+        # if len(left_lines) &lt;= 0 and len(right_lines) &lt;= 0:
+        #     pass
+        self.clean_lines(left_lines, 0.1)
+        self.clean_lines(right_lines, 0.1)  # 清除异常点
+        left_points = [(x1, y1) for line in left_lines for x1, y1, x2, y2 in line]
+        # print(left_points)
+
+        left_points = left_points + [(x2, y2) for line in left_lines for x1, y1, x2, y2 in line]
+        # print(left_points)
+        right_points = [(x1, y1) for line in right_lines for x1, y1, x2, y2 in line]
+
+        right_points = right_points + [(x2, y2) for line in right_lines for x1, y1, x2, y2 in line]
+        # left_points = [(x1, y1), (...), (...), (x2, y2), (...)]
+        # print(&quot;left:&quot;, left_points)
+</code></pre>
+<pre><code class="language-python">def clean_lines(self, lines, threshold):
+    slope = [(y2 - y1) / (x2 - x1) for line in lines for x1, y1, x2, y2 in line]
+    while len(lines) &gt; 0:
+        mean = np.mean(slope)
+        diff = [abs(s - mean) for s in slope]
+        idx = np.argmax(diff)
+        if diff[idx] &gt; threshold:
+            slope.pop(idx)
+            lines.pop(idx)
+        else:
+            break
+</code></pre>
+<p>并将数据用一次多项式进行拟合得到最终的车道线。</p>
+<pre><code class="language-python">def calc_lane_vertices(self, point_list, ymin, ymax):
+    x = [p[0] for p in point_list]
+    y = [p[1] for p in point_list]
+    # print(&quot;x:&quot;, x)
+    # print(&quot;y:&quot;, y)
+    # 使用一次多项式进行拟合
+    fit = np.polyfit(y, x, 1)
+    # 得到多项式的系数，返回的是多项式，可用于计算
+    fit_fn = np.poly1d(fit)
+    xmin = int(fit_fn(ymin))
+    xmax = int(fit_fn(ymax))
+
+    return [(xmin, ymin), (xmax, ymax)]
+</code></pre>
+<pre><code class="language-python"># 对数据进行拟合，返回端点坐标
+if len(left_points) &gt; 0:
+    left_vtx = self.calc_lane_vertices(left_points, 325, img.shape[0])
+    self.left_lane_xy = left_vtx
+    # print(&quot;left:&quot;, self.left_lane_xy)
+
+    cv.line(img, left_vtx[0], left_vtx[1], color, thickness)
+else:
+    self.left_lane_xy = 0
+
+if len(right_points) &gt; 0:
+    right_vtx = self.calc_lane_vertices(right_points, 325, img.shape[0])
+    self.right_lane_xy = right_vtx
+    # print(&quot;right:&quot;, self.right_lane_xy)
+
+    cv.line(img, right_vtx[0], right_vtx[1], color, thickness)
+else:
+    self.right_lane_xy = 0
+</code></pre>
+<figure data-type="image" tabindex="8"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603221033272.png" alt="image-20210603221033272" loading="lazy"></figure>
+<ol start="6">
+<li>
+<p>将车道线与原图整合</p>
+<pre><code class="language-python">res_img = cv.addWeighted(gray, 0.8, line_img, 1, 0)  # 两个图片叠加显示
+</code></pre>
+<figure data-type="image" tabindex="9"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603222307615.png" alt="image-20210603222307615" loading="lazy"></figure>
+</li>
+</ol>
+<h3 id="二-视频的处理">二、视频的处理</h3>
+<p>将视频流一帧一帧的读取，处理即可</p>
+<pre><code class="language-python">def videopredict(self, vedio_path=None):
+    if vedio_path is None:
+        pass
+    else:
+        cap = cv.VideoCapture(vedio_path)
+        frame_width = int(cap.get(3))  # 960
+        frame_hight = int(cap.get(4))  # 544
+        
+        # 用于输出视频
+        out = cv.VideoWriter(&quot;res_road.avi&quot;, cv.VideoWriter_fourcc(&quot;M&quot;, &quot;J&quot;, &quot;P&quot;, &quot;G&quot;), 30, (frame_width, frame_hight), False)
+        
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if ret:
+                k = cv.waitKey(1)
+                resoult_img = self.predict(frame, show_picture=False)
+                cv.imshow(&quot;resoult_img&quot;, resoult_img)
+                # out.write(resoult_img)  # 可选择   用于输出视频
+
+                if k == ord('q'):
+                    break
+            else:
+                break
+
+        cap.release()
+        out.release()
+        cv.destroyAllWindows()
+</code></pre>
+<video id="video" controls="" preload="none">
+    <source id="mp4" src="images/res_road1.mp4" type="video/mp4">
+</video>
+<h3 id="三-进一步改进">三、进一步改进</h3>
+<p>从视频中可以看出拟合的直线有时会受到地面的影响（视频中的横线）会导致错误的信息</p>
+<p>由于视频每一帧之前的图像变化理应是不会太大的（至少对于车道线来说是不大的），为此我将每一帧拟合直线与y轴的夹角进行对比（左右车道线分开进行），如果两者相差大于一个阈值，则仍然取上一条的拟合直线，这样就相当于增加了一个拟合直线反馈的环节，增加了信息的正确性，而后我又改进了图像进行处理区域，让原本一些间断的帧之间更加平滑。</p>
+<p>拟合直线的反馈检测：</p>
+<pre><code class="language-python">            if len(self.left_coefficient) != 0 and abs(
+                    np.arctan(self.left_coefficient[0]) - np.arctan(left_coefficient[0])) &gt; 0.436:
+                # 0.436为25度的弧度值   0.61   35
+                pass
+            else:
+                self.left_lane_xy = left_vtx
+                self.left_coefficient = left_coefficient
+
+            cv.line(img, self.left_lane_xy[0], self.left_lane_xy[1], color, thickness)
+</code></pre>
+<pre><code class="language-python">            if len(self.right_coefficient) != 0 and abs(
+                    np.arctan(self.right_coefficient[0]) - np.arctan(right_coefficient[0])) &gt; 0.436:
+                pass
+            else:
+                self.right_lane_xy = right_vtx
+                self.right_coefficient = right_coefficient
+
+            cv.line(img, self.right_lane_xy[0], self.right_lane_xy[1], color, thickness)
+</code></pre>
+<p>图像处理区域改进：</p>
+<pre><code class="language-python">    def getROI(self, img):
+        &quot;&quot;&quot;&quot;
+        获取图像内的指定区域，排除其余部分
+        &quot;&quot;&quot;
+        height = img.shape[0]
+        width = img.shape[1]
+        # 三角形区域
+        # triangle = np.array([[(0, height), (width, height), (int(width / 2), int(height / 2))]])
+        # 四边形区域
+        # points = np.array([[[0, height], [width, height], [width, int(height / 4) * 3],
+        #                     [int(width / 2), int(height / 2)], [0, int(height / 4) * 3]]], np.int32)
+        points = np.array([[[0, height], [width, height], [width, int(height / 4) * 3],
+                            [int(width / 2), int(height / 2)]]], np.int32)
+        black_image = np.zeros_like(img)
+        mask = cv.fillPoly(black_image, points, 255)
+        # mask = cv.fillPoly(black_image, triangle, 255)
+        masked_img = cv.bitwise_and(img, mask)
+        return masked_img
+</code></pre>
+<p>改进后的效果如下：</p>
+<p>只增加拟合直线的反馈：</p>
+<video id="video" controls="" preload="none">
+    <source id="mp4" src="images/res_road_25_sanjiao.mp4" type="video/mp4">
+</video>
+<p>增加拟合直线的反馈和区域的改进：</p>
+<video id="video" controls="" preload="none">
+    <source id="mp4" src="images/res_road_25_sibianxing.mp4" type="video/mp4">
+</video>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Python 人脸检测识别（dlib）]]></title>
+        <id>https://jiekeaoteman.github.io/post/python-ren-lian-jian-ce-shi-bie-dlib/</id>
+        <link href="https://jiekeaoteman.github.io/post/python-ren-lian-jian-ce-shi-bie-dlib/">
+        </link>
+        <updated>2022-10-28T13:12:11.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="借鉴于">借鉴于 ：</h2>
+<p><a href="https://www.cnblogs.com/AdaminXie/p/9010298.html">连接</a></p>
+<h2 id="准备">准备</h2>
+<ol>
+<li></li>
+</ol>
+<p>需要下载：</p>
+<figure data-type="image" tabindex="1"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210418210307609.png" alt="image-20210418210307609" loading="lazy"></figure>
+<p><a href="http://dlib.net/files/">下载地址</a></p>
+<ol start="2">
+<li></li>
+</ol>
+<p>主要所需库：dlib,open-cv,numpy</p>
+<p>安装dlib时大概是可以通过<a href="https://pypi.org/simple/dlib/">连接</a>下载再通过pip install安装（我是安装vs后安装成功的）</p>
+<h2 id="源码">源码</h2>
+<h3 id="get_frontfacepy">get_frontface.py</h3>
+<pre><code class="language-python"># -*- coding: utf-8 -*- 
+&quot;&quot;&quot;
+Creator: muxis
+Create time: 2021-04-16 19:47
+&quot;&quot;&quot;
+import cv2 as cv
+import os
+import dlib
+import numpy as np
+
+
+class GetFrontface:
+    def __init__(self, facedata_path):
+        self.facedata_path = facedata_path             # 人脸图像储存地址
+        self.person_dir_number = 0                     # 已建立的人脸文件夹个数
+        self.img_of_person_x_number = 0                # 人脸文件夹中的图像个数
+        self.flag_n = 0                                # 标志着是否已经新建存储人脸图像的文件夹
+        self.font = font = cv.FONT_HERSHEY_COMPLEX     # 字体
+
+	
+    def pre_workfloder_mkdir(self):
+        if os.path.isdir(self.facedata_path):
+            pass
+        else:
+            os.mkdir(self.facedata_path)
+
+    def pre_person_x_mkdir(self):
+        if os.listdir(self.facedata_path):
+            person_number_list = []
+            for i in os.listdir(self.facedata_path):
+                j = i.split('_')[-1]
+                person_number_list.append(int(j))
+            self.person_dir_number = max(person_number_list)
+
+    def statements(self, frame):
+        cv.putText(frame, &quot;Face Register&quot;, (20, 40), self.font, 1, (0, 0, 0), 1, cv.LINE_AA)
+        cv.putText(frame, &quot;N: New face folder&quot;, (20, 350), self.font, 0.8, (0, 0, 0), 1, cv.LINE_AA)
+        cv.putText(frame, &quot;S: Save current face&quot;, (20, 400), self.font, 0.8, (0, 0, 0), 1, cv.LINE_AA)
+        cv.putText(frame, &quot;Q: Quit&quot;, (20, 450), self.font, 0.8, (0, 0, 0), 1, cv.LINE_AA)
+
+    def Process(self):
+        self.pre_workfloder_mkdir()
+        self.pre_person_x_mkdir()
+
+        detector = dlib.get_frontal_face_detector()
+        cap = cv.VideoCapture(0)
+        while cap.isOpened():
+            flag, frame = cap.read()
+
+            kk = cv.waitKey(1)
+            if kk == ord('n'):
+                self.person_dir_number += 1
+                person_x_path = self.facedata_path + &quot;/person_&quot; + str(self.person_dir_number)
+                os.mkdir(person_x_path)
+                print(&quot;preson_%d已经创建成功。&quot; % self.person_dir_number)
+                self.flag_n = 1
+
+            if kk == ord('q'):
+                break
+
+            frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+            # 返回检测到的人脸模型 &lt;class 'dlib.dlib.rectangle'&gt;，就是一个矩形
+            rectangles = detector(frame_gray, 0)
+
+            # TODO 当摄像头中出现多个人脸时给与提示，应保持一个人脸正在录入 or 多人脸同时识别
+            # 目前此处rectangles应该尽量为1，多人脸也可以框出，但保存可能出现问题
+            if len(rectangles) != 0:
+                for i in rectangles:
+
+                    hight = i.bottom() - i.top()
+                    wigth = i.right() - i.left()
+                    h = int(hight / 2)
+                    w = int(wigth / 2)
+                    left_up = (i.left() - w, i.top() - h)
+                    right_down = (i.right() + w, i.bottom() + h)
+
+                    # 判断框是否超出640×480
+                    if (i.right() + w &gt; 640) or (i.left() - w &lt; 0) or (i.top() - h &lt; 0) or (i.bottom() + h) &gt; 480:
+                        cv.putText(frame, &quot;OUT OF RANGE!&quot;, (20, 300), self.font, 0.8, (0, 0, 255), 1, cv.LINE_AA)
+                        color_rectangle = (0, 0, 255)
+                        saveable = 0
+                    else:
+                        color_rectangle = (0, 255, 0)
+                        saveable = 1
+                    # 画出人脸的框
+                    cv.rectangle(frame, left_up, right_down, color_rectangle, 2)
+
+                    # 存储框中的人脸
+                    if kk == ord('s'):
+                        if self.flag_n:
+                            if saveable:
+                                self.img_of_person_x_number += 1
+                                # np默认float64
+                                img_blank = np.zeros((2 * hight, 2 * wigth, 3), np.uint8)
+                                for ii in range(2 * hight):
+                                    for jj in range(2 * wigth):
+                                        img_blank[ii, jj] = frame[i.top() - h + ii, i.left() - w + jj]
+                                cv.imwrite(person_x_path + &quot;/&quot; + str(self.img_of_person_x_number) + &quot;.jpg&quot;, img_blank)
+                                print(&quot;图片%d已创建&quot; % int(self.img_of_person_x_number))
+                            else:
+                                print(&quot;Fail to save.Please adjust your position and try again.&quot;)
+                        else:
+                            print(&quot;please press n before save.&quot;)
+            else:
+                pass
+
+            self.statements(frame)
+            cv.imshow(&quot;frame&quot;, frame)
+
+        cap.release()
+        cv.destroyAllWindows()
+
+
+def main():
+    facedata_path = &quot;F:/face_recg/facedata&quot;
+    get_frontface = GetFrontface(facedata_path)
+    get_frontface.Process()
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre>
+<h3 id="face_128d_to_csvpy">face_128D_to_csv.py</h3>
+<pre><code class="language-python"># -*- coding: utf-8 -*- 
+&quot;&quot;&quot;
+Creator: muxis
+Create time: 2021-04-18 09:00
+&quot;&quot;&quot;
+import cv2 as cv
+import dlib
+import os
+from skimage import io # pip安装scipy
+import numpy as np
+import csv
+
+
+# 目前单个只是单个人脸的检测计算
+def return_person_x_128D(person_x_path):
+    detector = dlib.get_frontal_face_detector()
+    predictor = dlib.shape_predictor(&quot;F:/Pycharm-workspace/cv/FACE_AI/data/shape_predictor_68_face_landmarks.dat&quot;)
+    face_rec = dlib.face_recognition_model_v1(&quot;F:/Pycharm-workspace/cv/FACE_AI/data&quot;
+                                              &quot;/dlib_face_recognition_resnet_model_v1.dat&quot;)
+
+    if len(os.listdir(person_x_path)) == 0:
+        print(person_x_path + &quot;该目录下无图片&quot;)
+    else:
+        face_128D = []
+        for i in range(len(os.listdir(person_x_path))):
+            j = str(i + 1)
+            img_rd = io.imread(person_x_path + &quot;/&quot; + j + &quot;.jpg&quot;)
+            rectangle = detector(img_rd, 1)
+            if len(rectangle) == 0:
+                face_128D_from_img = 0
+            else:
+                shape = predictor(img_rd, rectangle[0])
+                face_128D_from_img = face_rec.compute_face_descriptor(img_rd, shape)
+                face_128D.append(face_128D_from_img)
+    mean_person_x_128D = np.array(face_128D).mean(axis=0)
+    return mean_person_x_128D
+
+
+def all_person_data_save(data_path, csvdata_path):
+    with open(csvdata_path, &quot;w&quot;, newline=&quot;&quot;) as csvfile:
+        for i in range(len(os.listdir(data_path))):
+            j = i+1
+            a = return_person_x_128D(data_path + &quot;/person_&quot; + str(j))
+            writer = csv.writer(csvfile)
+            writer.writerow(a)
+            print(&quot;person_%d已经存储完成&quot; % j)
+
+
+def mian():
+    data_path = &quot;F:/face_recg/facedata&quot;
+    csvdata_path = &quot;F:/face_recg/data/features_all.csv&quot;
+    all_person_data_save(data_path, csvdata_path)
+
+
+if __name__ == &quot;__main__&quot;:
+    mian()
+
+</code></pre>
+<h3 id="face_recpy">face_rec.py</h3>
+<pre><code class="language-python"># -*- coding: utf-8 -*- 
+&quot;&quot;&quot;
+Creator: muxis
+Create time: 2021-04-18 16:10
+&quot;&quot;&quot;
+import cv2 as cv
+import dlib
+import numpy as np
+import pandas as pd
+
+
+class FaceRec:
+    def __init__(self, csv_path):
+        self.csv_path = csv_path
+        self.font = font = cv.FONT_HERSHEY_COMPLEX  # 字体
+
+    def statements(self, frame):
+        cv.putText(frame, &quot;Face Recognize&quot;, (20, 40), self.font, 1, (0, 0, 0), 1, cv.LINE_AA)
+        cv.putText(frame, &quot;Q: Quit&quot;, (20, 450), self.font, 0.8, (0, 0, 0), 1, cv.LINE_AA)
+
+    # 计算欧氏距离
+    def euclidean_distance(self, feature1, feature2):
+        feature1 = np.array(feature1)
+        feature2 = np.array(feature2)
+        distance = np.sqrt(np.sum(np.square(feature1 - feature2)))
+        return distance
+
+    def get_data_from_csv(self):
+        csv = pd.read_csv(self.csv_path, header=None)
+        person_known_128D = []
+        for i in range(csv.shape[0]):
+            person_x_128D = []
+            for j in range(128):
+                person_x_128D.append(csv.iloc[i, :][j])
+            person_known_128D.append(person_x_128D)
+        return person_known_128D
+
+    def Pross(self, cap):
+        detector = dlib.get_frontal_face_detector()
+        predictor = dlib.shape_predictor(&quot;F:/Pycharm-workspace/cv/FACE_AI/data/shape_predictor_68_face_landmarks.dat&quot;)
+        face_rec = dlib.face_recognition_model_v1(&quot;F:/Pycharm-workspace/cv/FACE_AI/data&quot;
+                                                  &quot;/dlib_face_recognition_resnet_model_v1.dat&quot;)
+        while cap.isOpened():
+            ret, frame = cap.read()
+            kk = cv.waitKey(1)
+            if kk == ord(&quot;q&quot;):
+                break
+
+            rectangles = detector(frame, 0)
+            if len(rectangles) != 0:
+                for i in rectangles:
+                    hight = i.bottom() - i.top()
+                    wigth = i.right() - i.left()
+                    h = int(hight / 2)
+                    w = int(wigth / 2)
+                    left_up = (i.left() - w, i.top() - h)
+                    right_down = (i.right() + w, i.bottom() + h)
+                    pose_name = (i.left(), int(i.bottom() + (i.bottom() - i.top()) / 4))
+
+                    # 画出人脸的框
+                    cv.rectangle(frame, left_up, right_down, (0, 255, 0), 2)
+
+                    # 计算128D
+                    shape = predictor(frame, rectangles[0])
+                    face_128D_from_img = face_rec.compute_face_descriptor(frame, shape)
+
+                    person_known_128D = self.get_data_from_csv()
+                    name = &quot;unknown&quot;
+                    for ii in range(len(person_known_128D)):
+                        d = self.euclidean_distance(person_known_128D[ii], face_128D_from_img)
+                        if d &lt; 0.4:
+                            name = &quot;perxon_&quot; + str(ii + 1)
+                    # 写上名字
+                    cv.putText(frame, name, pose_name, self.font, 1, (255, 255, 255), 1, cv.LINE_AA)
+
+            # statements
+            self.statements(frame)
+            cv.imshow(&quot;frame&quot;, frame)
+
+
+def main():
+    csv_path = &quot;F:/face_recg/data/features_all.csv&quot;
+    face_rec = FaceRec(csv_path)
+    cap = cv.VideoCapture(0)
+    face_rec.Pross(cap)
+    # cap.set(3, 480) 这里应该默认是640×480
+    cap.release()
+    cv.destroyAllWindows()
+
+
+if __name__ == '__main__':
+    main()
+
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Personal config and minor questions]]></title>
+        <id>https://jiekeaoteman.github.io/post/personal-config-and-minor-questions/</id>
+        <link href="https://jiekeaoteman.github.io/post/personal-config-and-minor-questions/">
+        </link>
+        <updated>2022-10-28T13:11:20.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="20201125">2020.11.25</h2>
+<p>发现虚拟机（ubuntu）不能上网，之后发现ifconfig后只有127.0.0.1一个</p>
+<p>解决：<code>sudo -i</code>   切换为root用户</p>
+<p>​           然后输入 <code>dhclient -v</code> 之后ifconfig成功出现另一个网络exit退出即可</p>
+<p><a href="https://blog.csdn.net/qq_40141862/article/details/86657408">参考链接</a></p>
+<h2 id="20201214">2020.12.14</h2>
+<p>（09-http）使用python写http服务器时，在谷歌浏览器使用百度搜索引擎访问服务器中带有中文的url时返回404</p>
+<p>解决：由于浏览器在向http服务器发送head时，其中的url若含有中文必须经过编码（在因特网上传送url，只能采用ASCII表）后发送，浏览器会自动编码，且每个字节前面会加上一个%，我在服务器中收到的路径中的中文部分就会变成如%e6%96%87%e7%ab%a0这样，无法打开相应文件，浏览器返回404</p>
+<p>可通过如下代码解决</p>
+<pre><code class="language-python">from urllib.parse import unquote
+unquote(&quot;%e6%96%87%e7%ab%a0&quot;), encoding=&quot;GBK&quot;
+</code></pre>
+<p><a href="https://www.zhihu.com/question/30098761">参考链接</a></p>
+<h1 id="2021330">2021.3.30</h1>
+<p>谷歌账号注册提示手机号无法使用</p>
+<p>解决：使用vpn后将谷歌浏览器的语言切换成vpn的语言在进行注册</p>
+<p>vpn： google插件  Setup Vpn [下载链接](</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[关于Python中的反斜杠\相关问题总结]]></title>
+        <id>https://jiekeaoteman.github.io/post/guan-yu-python-zhong-de-fan-xie-gang-xiang-guan-wen-ti-zong-jie/</id>
+        <link href="https://jiekeaoteman.github.io/post/guan-yu-python-zhong-de-fan-xie-gang-xiang-guan-wen-ti-zong-jie/">
+        </link>
+        <updated>2022-10-28T12:53:14.000Z</updated>
+        <content type="html"><![CDATA[<p>借鉴于：</p>
+<p><a href="https://www.cnblogs.com/tangmixun/p/11605581.html">python:转义符</a></p>
+<p><a href="https://blog.csdn.net/tangdaxue43/article/details/86661132">Python 3 转义字符表（带示例）</a></p>
+<p><a href="https://blog.csdn.net/zd147896325/article/details/80111581?utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromMachineLearnPai2%7Edefault-1.control&amp;dist_request_id=1332031.396.16189998468934691&amp;depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromMachineLearnPai2%7Edefault-1.control">python怎样禁止对一个字符串变量进行转义解析</a></p>
+<p><a href="https://blog.csdn.net/wbghs98/article/details/106443456/">Python中如何让字符串变量不发生转义</a></p>
+<p>相关拓展：</p>
+<p><a href="https://stackoverflow.com/questions/50199840/python3-replacing-double-backslash-with-single-backslash/50199924#50199924">python3 replacing double backslash with single backslash [duplicate]</a></p>
+<h2 id="1转义符简介">1.转义符简介</h2>
+<p>python中将各种类型表达式中的 \ 符号，都看作转义符，如 \n 代表换行 \t 代表空tab，还发现 \a是响铃，如果你print(&quot;\a&quot;)电脑就会响一</p>
+<p>下，但是在Pycharm中不可以(亲测)，行末尾的 \ 的意思是该行还没写完，接着下边一行的内容......</p>
+<p>下面是转移字符表   <a href="https://docs.python.org/3/reference/lexical_analysis.html">官方链接</a></p>
+<figure data-type="image" tabindex="1"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210421185910933.png" alt="image-20210421185910933" loading="lazy"></figure>
+<p>转义符对存在转义符命令表中的转义命令起到了作用</p>
+<p>转义符对不存在转义符命令表中的转义命令没有起到作用</p>
+<p>转义符将其后的符号都变成本身对程序没有作用的符号，</p>
+<p>表达式或字符串最末尾是 \ 的话，一定代表 换行 继续写（即使是r也无法改变），必须要向下边空一行，程序才能跑</p>
+<p>r 可使字符串内(除字符串最后一位是 \ 的情况)所有的转义字符 \ 都失效。</p>
+<p>如果想要在字符串末尾加上 \ 符号，只有使用 + 这种方法</p>
+<h2 id="2关于字符串变量中存在-反斜杠-但是我们在使用时并不想它发挥反斜杠的转义作用该怎么办">2.关于字符串变量中存在 反斜杠   \   但是我们在使用时并不想它发挥反斜杠的转义作用该怎么办？</h2>
+<p><strong>以下为闲扯部分</strong></p>
+<p>{</p>
+<p>这可能大概是一个奇特的问题。(可能很少有需要考虑到的时候)</p>
+<p>我考虑到这个问题是因为当时我的一个程序要接收一个地址信息，我知道接收的地址全都是反斜杠，然后我就考虑到了可能会存在转义问题使我的地址信息失效，于是尝试将反斜杠换斜杠等等，再然后打开n个标签页，然后就有了这篇总结。</p>
+<p>但是最终我发现其实我根本不需要考虑这个转义问题（测试的重要性。。。。。），至于为什么请详细看方法2。</p>
+<p>}</p>
+<h3 id="方法1我们可以通过在字符串前面增加一个r-r是raw的意思-raw-string原生字符串">方法1.我们可以通过在字符串前面增加一个r    (r是raw的意思， raw string，原生字符串)</h3>
+<figure data-type="image" tabindex="2"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210421195809494.png" alt="image-20210421195809494" loading="lazy"></figure>
+<h3 id="方法2如果字符串变量为一个返回变量无法做到方法1">方法2.如果字符串变量为一个返回变量，无法做到方法1</h3>
+<p><strong>分情况看待</strong></p>
+<p>请看以下代码：</p>
+<figure data-type="image" tabindex="3"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210421201523847.png" alt="image-20210421201523847" loading="lazy"></figure>
+<figure data-type="image" tabindex="4"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210421201316773.png" alt="image-20210421201316773" loading="lazy"></figure>
+<p>发现从a.txt中读取的带有反斜杠\ 的地址在输出时反斜杠并没有起到转义作用</p>
+<p>而 我定义的变量b以及从一个函数中传回的变量  中反斜杠起到了转义的作用</p>
+<p>我经过搜索发现了这么一句话：</p>
+<p><strong>转义只发生在代码字面量转换为python内部对象的过程中，已经是字符串了，则不会再次转义。<br>
+言外之意是当我们得到的字符串在还没有绑定给Python变量时，这个时候我们对它进行操作，就不会发生转义</strong></p>
+<p>对于python还有这么一句话：<strong>一切变量皆对象</strong></p>
+<p>大概这样就可以理解上面代码为什么这么输出了。</p>
+<p>这样应该已经解决了大部分的问题。（好多可能是类似这样的地址问题）（我认为大概是比较小的概率会出现程序中出现一个带有\的东西）</p>
+<p>对于剩下的这种情况：</p>
+<p>一个比较笨的方法：</p>
+<p>我测试的时候不知道为啥           \a会变成\7   其它的都测试成功</p>
+<pre><code class="language-python">escape_dict = {'\a': r'\a',
+               '\b': r'\b',
+               '\f': r'\f',
+               '\n': r'\n',
+               '\r': r'\r',
+               '\t': r'\t',
+               '\v': r'\v',
+               '\'': r'\'',
+               '\&quot;': r'\&quot;',
+               '\0': r'\0',
+               '\1': r'\1',
+               '\2': r'\2',
+               '\3': r'\3',
+               '\4': r'\4',
+               '\5': r'\5',
+               '\6': r'\6',
+               '\7': r'\7', }
+
+
+def raw_string(str):
+    rstring = &quot;&quot;
+    for char in str:  # 防止图片地址发生转义
+        try:
+            if char in escape_dict:
+                rstring += escape_dict[char]
+            else:
+                rstring += char
+        except:
+            KeyError: print(&quot;字符串变量转义发生错误&quot;)
+    print(rstring)
+
+raw_string(&quot;\a\b\f\n\r\t\v\'\&quot;\0\1\2\3\4\5\6\7&quot;)
+#           \7\b\f\n\r\t\v\'\&quot;\0\1\2\3\4\5\6\7
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[创建个人博客的记录]]></title>
+        <id>https://jiekeaoteman.github.io/post/chuang-jian-ge-ren-bo-ke-de-ji-lu/</id>
+        <link href="https://jiekeaoteman.github.io/post/chuang-jian-ge-ren-bo-ke-de-ji-lu/">
+        </link>
+        <updated>2022-10-28T12:51:57.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="一-注册github账号建立仓库">一、 注册GitHub账号，建立仓库</h2>
+<ul>
+<li>
+<p>参考链接： <a href="https://www.zhihu.com/question/20962496">如何在 GitHub 上写博客？</a>   <a href="https://help.github.com/cn/github/working-with-github-pages">GitHub Pages帮助页面</a></p>
+</li>
+<li>
+<p>GitHub宣布，自2020年10月1日起，在GitHub平台上创建的所有源代码存储库都将默认命名为 main ，而非原本的 master  所以在一些老的教程会看到master</p>
+</li>
+<li>
+<p>为什么取仓库名字为username.github.io？</p>
+<figure data-type="image" tabindex="1"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121104551018.png" alt="image-20201121104551018" loading="lazy"></figure>
+</li>
+<li>
+<p>建立仓库后会选择主题，在我尝试使用jekyll主题后我发现我下载的主题还要进行一些文件的配置，我嫌麻烦就放弃了，也可能是我下载的主题自带了一些原主人的东西</p>
+</li>
+<li>
+<p>接下来我去学习了git的使用以及下载了githubdesktop（后面没有使用，但是git是需要下载的）</p>
+<p>附我学习的视频连接<a href="https://www.bilibili.com/video/BV1Zz4y1C7vg?p=1">【2021年Git全集教程】大牛4小时带你精通Git玩转GitHub（最新版）</a></p>
+<pre><code> 笔记   链接：https://pan.baidu.com/s/1NZxaQOZPjJUcFQsSub0q-g   提取码：1c0y
+</code></pre>
+</li>
+</ul>
+<h2 id="二-使用gridea同步blog和picgo上传图片">二、 使用Gridea同步blog和PicGo上传图片</h2>
+<ul>
+<li>
+<p>我是使用gitee仓库做的图床，github pages上发博客</p>
+<p>因为gitee是国内的所以访问速度会比github更加快一点，所以把图片资源放到gitee上去</p>
+<p>ps：我之前使用github的图床时使用picgo生成的链接没法用</p>
+<p>至于在github上发布blog是因为github受众广，稳定</p>
+</li>
+<li>
+<p>注册一个gitee账号，建立仓库     <a href="https://gitee.com/help/articles/4169">参考连接</a></p>
+</li>
+<li>
+<p><a href="https://git-scm.com/downloads">git安装地址</a>      <a href="https://gridea.dev/">gridea安装地址</a>  这个安装问题应该不大</p>
+</li>
+</ul>
+<h3 id="配置gridea">配置Gridea</h3>
+<p>Gridea是一个静态的博客写作客户端，你可以在上面同步你的blog</p>
+<p>接下来要进行一定的配置</p>
+<figure data-type="image" tabindex="2"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121115616587.png" alt="image-20201121115616587" loading="lazy"></figure>
+<p>令牌获取：</p>
+<figure data-type="image" tabindex="3"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121144809276.png" alt="image-20201121144809276" loading="lazy"></figure>
+<figure data-type="image" tabindex="4"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121144852697.png" alt="image-20201121144852697" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121144928730.png" alt="image-20201121144928730" loading="lazy"></figure>
+<p>点击右上方的Generate new token，在Note输入对Token的描述或备注，勾选下方的repo生成即可。注意这个token只能看到这一次，最好记录下来。</p>
+<p>将token输入令牌一栏后保存，点击远程连接测试，提示连接成功完成配置，失败则检查上面的配置信息</p>
+<h3 id="配置picgo">配置PicGo</h3>
+<p>要先下载最新版Node.js  <a href="https://nodejs.org/en/download/">Node.js下载</a>  还需要npm（新版的Node.js中一般自带npm）</p>
+<p>可以通过window终端输入<code>node -v</code> 和<code>npm -v</code>  看是否安装成功</p>
+<p>下载PicGo   点击 <a href="https://picgo.github.io/PicGo-Doc/zh/guide/">PicGo</a> 里面有帮助文档和下载</p>
+<figure data-type="image" tabindex="6"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121150736993.png" alt="image-20201121150736993" loading="lazy"></figure>
+<p>打开PicGo在插件设置中搜索gitee（因为picgo软件未带上传gitee的部分需要下载插件）</p>
+<figure data-type="image" tabindex="7"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121150936036.png" alt="image-20201121150936036" loading="lazy"></figure>
+<p>安装gitee-uploader，安装好了以后重启，打开图床设置中的gitee</p>
+<figure data-type="image" tabindex="8"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121151807061.png" alt="image-20201121151807061" loading="lazy"></figure>
+<p>设为默认图床</p>
+<p>获取gitee的token方法跟github差不多：设置-&gt;私人令牌-&gt;生成新令牌即可</p>
+<p>此时可以在上传区上图片试试了，上传后应该打开gitee仓库就能看到图片文件</p>
+<h2 id="三-使用typora写博文图片插入即时上传并生成连接">三、 使用Typora写博文，图片插入即时上传并生成连接</h2>
+<ul>
+<li>下载新版Typora（一些老版的没有图片上传功能），安装很简单。    <a href="https://typora.io/">Typora下载</a></li>
+<li>md语法基本看上不到10分钟就能会，可自行百度</li>
+<li>文件-&gt;偏好设置-&gt;图像</li>
+<li>文件-&gt;偏好设置-&gt;图像</li>
+</ul>
+<figure data-type="image" tabindex="9"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121155207168.png" alt="image-20201121155207168" loading="lazy"></figure>
+<p>这样你可以在写文章时直接把图片粘贴进来，他会自动上传至gitee，并且生成连接</p>
+<p>（其实gridea内置了编辑器，但是我觉得没有typora好用）</p>
+<p>写完文章我一般都是将Typora中的内容复制到Gridea中去，使用Gridea来生成文章。因为一些头文件的规范直接放在源文件的posts中可能导致gridea解析出错，然后预览，没问题同步即可。</p>
+<h2 id="四-gridea主题">四、 Gridea主题</h2>
+<h3 id="下载并更换主题">下载并更换主题</h3>
+<p><a href="https://gridea.dev/themes">主题市场</a> 选择一个自己喜欢的主题下载</p>
+<figure data-type="image" tabindex="10"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121161611089.png" alt="image-20201121161611089" loading="lazy"></figure>
+<p>点击下找到站点源文件，将下载的主题文件夹（下载的东西可能还有一些帮助文档啥的）放到站点源文件的themes里就好了，之后预览，同步，打开博客时可能会出现混乱，可以尝试Ctrl+F5刷新</p>
+<p>tips：</p>
+<p>F5刷新按钮只对当前页面进行刷新，只刷新本地缓存；</p>
+<p>Ctrl + F5 的行为也是刷新页面，但是会把浏览器中的临时文件夹的文件删除再重新从服务器下载。<br>
+比如某网站更新了 style.css 文件，如果单纯按 F5 刷新，那么当前页面还是使用未修改的 style.css 文件内容，如果按 Ctrl + F5 就会重新从服务器下载 style.css 文件，并使用修改后的 style.css 文件。</p>
+<h3 id="主题的一些其他配置以我下载的fog主题为例">主题的一些其他配置（以我下载的Fog主题为例）</h3>
+<ul>
+<li>Valine评论配置</li>
+</ul>
+<p>​        已注册lencloud  已使用npm下载Valine   ------&gt;未完成</p>
+<p>​        npm安装过慢使用淘宝服务器下载   以下载jquery为例</p>
+<p>​        <code>npm install jquery --registry=https://registry.npm.taobao.org</code></p>
+<p>​        或者执行这行命令， npm 会从淘宝镜像下载包了，速度会比原来快很多</p>
+<p>​        <code>npm config set -g registry https:*//registry.npm.taobao.org* </code></p>
+<ul>
+<li>
+<p>更换看板娘  ------&gt; 未完成</p>
+</li>
+<li>
+<p>文章热度一 直loding  查看主题帮助文档得：进入leancloud项目下，查看 部署-结构化数据 是否有Counter</p>
+</li>
+</ul>
+<p>​        如果没有，创建一个新的Class，名称为Counter------&gt;未完成</p>
+<hr>
+<hr>
+<p>上面部分基本已经搭建起来了个人博客，实现了更新文章等基本功能</p>
+<p>下面是我想要 双线部署博客到到 Coding Pages 和 GitHub Pages 这需要一个自己的域名（可以阿里云腾讯云上花几块钱买一个便宜的域名）不买域名也可以将你的博客再部署到coding的静态网站上（毕竟国内访问速度快）</p>
+<h2 id="五-部署blog到coding">五、 部署blog到coding</h2>
+<p>注册coding账号，因为coding取消了个人版，所以要先创建一个团队，团队名根据自己起一个就行<img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121170914469.png" alt="image-20201121170914469" loading="lazy"></p>
+<figure data-type="image" tabindex="11"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121171235012.png" alt="image-20201121171235012" loading="lazy"></figure>
+<p>选择创建代码托管项目----&gt;填好项目名称会自动生成项目标识----&gt;完成创建</p>
+<figure data-type="image" tabindex="12"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121171552758.png" alt="image-20201121171552758" loading="lazy"></figure>
+<p>点击左下角的项目设置<img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121181331328.png" alt="image-20201121181331328" loading="lazy"></p>
+<p>在项目设置 &gt; 项目与成员 &gt; 功能开关内打开持续集成，持续部署</p>
+<figure data-type="image" tabindex="13"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121181604295.png" alt="image-20201121181604295" loading="lazy"></figure>
+<p>在左边持续部署中选择静态网站 &gt; 创建静态网站   节点选择香港在绑定域名时可以不用备案</p>
+<figure data-type="image" tabindex="14"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121181852007.png" alt="image-20201121181852007" loading="lazy"></figure>
+<p>在这你可以看到静态网站的地址</p>
+<figure data-type="image" tabindex="15"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121183414215.png" alt="image-20201121183414215" loading="lazy"></figure>
+<p>获取coding 的token   之后勾选project:depot权限完成 （注意保存token，他之后没有办法查看忘了只能重新建立）</p>
+<figure data-type="image" tabindex="16"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121182449908.png" alt="image-20201121182449908" loading="lazy"></figure>
+<p>完成以后再打开Gridea点击远程  &gt; 进行coding pages的配置</p>
+<figure data-type="image" tabindex="17"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121183844678.png" alt="image-20201121183844678" loading="lazy"></figure>
+<p>远程连接检测 &gt; 同步即可    之后就可以打开之前静态网站的地址看一下自己的blog了</p>
+<h2 id="六-双线部署博客到到-coding-pages-和-github-pages">六、 双线部署博客到到 Coding Pages 和 GitHub Pages</h2>
+<p>标题的意思是通过一个域名分别绑定Coding和GitHub，在dns解析时设置国内ip访问域名时转到Coding国外ip访问域名时转到GitHub。不过我最后没有完成，因为Coding Pages从旧版更新以后如果要绑定自定义域名就必须使用腾讯云的cdn加速，这个项目是要收费的，所以我最终没有实现双线部署。就只绑定了GitHub Pages</p>
+<ul>
+<li>
+<p>域名绑定GitHub Pages</p>
+<p>进入仓库，选择Setting</p>
+<figure data-type="image" tabindex="18"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121194948373.png" alt="image-20201121194948373" loading="lazy"></figure>
+<p>然后下拉找到GitHub Pages里的Custom domain</p>
+<figure data-type="image" tabindex="19"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121195327094.png" alt="image-20201121195327094" loading="lazy"></figure>
+<p>之后他应该会自动生成一个CNAME（大写）的文件里面应该有你的域名，如果没有请自行创建并填写域名。</p>
+<figure data-type="image" tabindex="20"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121195639379.png" alt="image-20201121195639379" loading="lazy"></figure>
+<p>在Gridea的远程配置中CNAME添加自己的域名，不然每次同步后Github Pages的Custom domain会消失，接下来你就没法通过域名访问博客了</p>
+<p>新注册了一个域名后,并无法直接使用,而要访问网络上的服务器,必须通过服务器的IP，因此接下来要进行DNS解析。</p>
+<p>因为我是在腾讯云买的域名因此我以在腾讯云解析为例</p>
+</li>
+</ul>
+<figure data-type="image" tabindex="21"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121201259936.png" alt="image-20201121201259936" loading="lazy"></figure>
+<p>主机记录：一般选@就可以本来我的一个地址是https://xxxxxxx.com如果主机记录为@那么记录值选择xxxxxx.com就可以了</p>
+<figure data-type="image" tabindex="22"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121201359980.png" alt="image-20201121201359980" loading="lazy"></figure>
+<p>TTL：  Time To Live  这个值越大修改解析后等待生效的时间越长，但是不能设置的太小，太小了域名解析的稳定性和解析速度收到影响</p>
+<p>默认即可  600为600秒。添加上就可以通过你的域名访问你的博客了。</p>
+<p>这里解释一下DNS解析是让你的域名可以找到你博客的地址，而想要让你的博客接受你这个域名的访问就必须进行添加CNAME</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Hello Gridea]]></title>
+        <id>https://jiekeaoteman.github.io/post/hello-gridea/</id>
+        <link href="https://jiekeaoteman.github.io/post/hello-gridea/">
+        </link>
+        <updated>2018-12-11T16:00:00.000Z</updated>
+        <summary type="html"><![CDATA[<p>👏  欢迎使用 <strong>Gridea</strong> ！<br>
+✍️  <strong>Gridea</strong> 一个静态博客写作客户端。你可以用它来记录你的生活、心情、知识、笔记、创意... ...</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>👏  欢迎使用 <strong>Gridea</strong> ！<br>
+✍️  <strong>Gridea</strong> 一个静态博客写作客户端。你可以用它来记录你的生活、心情、知识、笔记、创意... ...</p>
+<!-- more -->
+<p><a href="https://github.com/getgridea/gridea">Github</a><br>
+<a href="https://gridea.dev/">Gridea 主页</a><br>
+<a href="https://fehey.com/">示例网站</a></p>
+<h2 id="特性">特性👇</h2>
+<p>📝  你可以使用最酷的 <strong>Markdown</strong> 语法，进行快速创作</p>
+<p>🌉  你可以给文章配上精美的封面图和在文章任意位置插入图片</p>
+<p>🏷️  你可以对文章进行标签分组</p>
+<p>📋  你可以自定义菜单，甚至可以创建外部链接菜单</p>
+<p>💻  你可以在 <strong>Windows</strong>，<strong>MacOS</strong> 或 <strong>Linux</strong> 设备上使用此客户端</p>
+<p>🌎  你可以使用 <strong>𝖦𝗂𝗍𝗁𝗎𝖻 𝖯𝖺𝗀𝖾𝗌</strong> 或 <strong>Coding Pages</strong> 向世界展示，未来将支持更多平台</p>
+<p>💬  你可以进行简单的配置，接入 <a href="https://github.com/gitalk/gitalk">Gitalk</a> 或 <a href="https://github.com/SukkaW/DisqusJS">DisqusJS</a> 评论系统</p>
+<p>🇬🇧  你可以使用<strong>中文简体</strong>或<strong>英语</strong></p>
+<p>🌁  你可以任意使用应用内默认主题或任意第三方主题，强大的主题自定义能力</p>
+<p>🖥  你可以自定义源文件夹，利用 OneDrive、百度网盘、iCloud、Dropbox 等进行多设备同步</p>
+<p>🌱 当然 <strong>Gridea</strong> 还很年轻，有很多不足，但请相信，它会不停向前 🏃</p>
+<p>未来，它一定会成为你离不开的伙伴</p>
+<p>尽情发挥你的才华吧！</p>
+<p>😘 Enjoy~</p>
+]]></content>
+    </entry>
+</feed>
