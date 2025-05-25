@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>使用opencv+python实现道路的实时检测 | MZSG</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://jiekeaoteman.github.io/favicon.ico?v=1748160771678">
+<link rel="stylesheet" href="https://jiekeaoteman.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="前言 ：
+使用的IDE：
+
+python版本：
+
+主要使用的包：numpy，cv2，
+一、 图像的处理
+以下都以这一帧的图像为例：
+
+
+
+图像的灰度化
+gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+
+..." />
+    <meta name="keywords" content="" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://jiekeaoteman.github.io">
+        <img src="https://jiekeaoteman.github.io/images/avatar.png?v=1748160771678" class="site-logo">
+        <h1 class="site-title">MZSG</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      温故而知新
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://jiekeaoteman.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">使用opencv+python实现道路的实时检测</h2>
+            <div class="post-date">2022-10-28</div>
+            
+              <div class="feature-container" style="background-image: url('https://gitee.com/jiekeaoteman/blgimg/raw/master/img/aleh-tsikhanau-5ZpTrtEEyic-unsplash  (1).jpg')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <h3 id="前言">前言 ：</h3>
+<p>使用的IDE：</p>
+<figure data-type="image" tabindex="1"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210606215835424.png" alt="image-20210606215835424" loading="lazy"></figure>
+<p>python版本：</p>
+<figure data-type="image" tabindex="2"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210604150217983.png" alt="image-20210604150217983" loading="lazy"></figure>
+<p>主要使用的包：numpy，cv2，</p>
+<h3 id="一-图像的处理">一、 图像的处理</h3>
+<p>以下都以这一帧的图像为例：</p>
+<figure data-type="image" tabindex="3"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/road2.jpg" alt="" loading="lazy"></figure>
+<ol>
+<li>
+<p>图像的灰度化</p>
+<pre><code class="language-python">gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+</code></pre>
+<p>因为主要是检测出图像中的车道线，所以没有必要使用三通道的彩图，将图像变为单通道的灰度图，以减少计算量</p>
+</li>
+<li>
+<p>使用高斯滤波和开运算对图像进行平滑处理，减少噪音</p>
+<pre><code class="language-python">blur_gray = cv.GaussianBlur(gray, (self.blur_ksize, self.blur_ksize), 0)  # 高斯模糊
+
+kernel = np.ones((5, 5), np.uint8)
+kaiyunsuan = cv.morphologyEx(blur_gray, cv.MORPH_OPEN, kernel)  # 开运算
+</code></pre>
+</li>
+<li>
+<p>使用Canny算子进行边缘检测</p>
+<pre><code class="language-python">edges = cv.Canny(kaiyunsuan, self.canny_lthreshold, self.canny_hthreshold)
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603211714378.png" alt="image-20210603211714378" loading="lazy"></figure>
+</li>
+<li>
+<p>获取图像的主要检测区域</p>
+<pre><code class="language-python">def getROI(self, img):
+    height = img.shape[0]
+    width = img.shape[1]
+    # triangle = np.array([[(int(width/5), height), (int(width/5)*4, height), (int(width / 2), int(height / 2))]])
+    triangle = np.array([[(0, height), (width, height), (int(width / 2), int(height / 2))]])
+    black_image = np.zeros_like(img)
+    mask = cv.fillPoly(black_image, triangle, 255)
+    masked_img = cv.bitwise_and(img, mask)
+    return masked_img
+</code></pre>
+<p>选择合适的区域进行检测有助于减少计算量</p>
+<p>本次选用的区域为如下图所示（三角形高为图像高的一半）</p>
+<figure data-type="image" tabindex="5"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603211802873.png" alt="image-20210603211802873" loading="lazy"></figure>
+<figure data-type="image" tabindex="6"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603211826300.png" alt="image-20210603211826300" loading="lazy"></figure>
+</li>
+<li>
+<p>使用霍夫线检测获取图像中的直线，返回每条直线的端点坐标，</p>
+<pre><code class="language-python">lines = cv.HoughLinesP(img, self.rho, self.theta, self.threshold, np.array([]),
+                               minLineLength=self.min_line_length, maxLineGap=self.max_line_gap)
+        print(&quot;lines:&quot;, lines)
+</code></pre>
+<figure data-type="image" tabindex="7"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603212935405.png" alt="image-20210603212935405" loading="lazy"></figure>
+</li>
+</ol>
+<p>根据其坐标算出直线斜率，并根据其平均斜率排除异常点，</p>
+<p>然后大致分出左右车道线，</p>
+<pre><code class="language-python">left_lines, right_lines = [], []
+        for line in lines:
+            for x1, y1, x2, y2 in line:
+                k = (y2 - y1) / (x2 - x1)
+                if k &lt; 0:
+                    left_lines.append(line)
+                    # print(&quot;左车道获得一组坐标&quot;)
+                else:
+                    right_lines.append(line)
+                    # print(&quot;右车道获得一组坐标&quot;)
+        # if len(left_lines) &lt;= 0 and len(right_lines) &lt;= 0:
+        #     pass
+        self.clean_lines(left_lines, 0.1)
+        self.clean_lines(right_lines, 0.1)  # 清除异常点
+        left_points = [(x1, y1) for line in left_lines for x1, y1, x2, y2 in line]
+        # print(left_points)
+
+        left_points = left_points + [(x2, y2) for line in left_lines for x1, y1, x2, y2 in line]
+        # print(left_points)
+        right_points = [(x1, y1) for line in right_lines for x1, y1, x2, y2 in line]
+
+        right_points = right_points + [(x2, y2) for line in right_lines for x1, y1, x2, y2 in line]
+        # left_points = [(x1, y1), (...), (...), (x2, y2), (...)]
+        # print(&quot;left:&quot;, left_points)
+</code></pre>
+<pre><code class="language-python">def clean_lines(self, lines, threshold):
+    slope = [(y2 - y1) / (x2 - x1) for line in lines for x1, y1, x2, y2 in line]
+    while len(lines) &gt; 0:
+        mean = np.mean(slope)
+        diff = [abs(s - mean) for s in slope]
+        idx = np.argmax(diff)
+        if diff[idx] &gt; threshold:
+            slope.pop(idx)
+            lines.pop(idx)
+        else:
+            break
+</code></pre>
+<p>并将数据用一次多项式进行拟合得到最终的车道线。</p>
+<pre><code class="language-python">def calc_lane_vertices(self, point_list, ymin, ymax):
+    x = [p[0] for p in point_list]
+    y = [p[1] for p in point_list]
+    # print(&quot;x:&quot;, x)
+    # print(&quot;y:&quot;, y)
+    # 使用一次多项式进行拟合
+    fit = np.polyfit(y, x, 1)
+    # 得到多项式的系数，返回的是多项式，可用于计算
+    fit_fn = np.poly1d(fit)
+    xmin = int(fit_fn(ymin))
+    xmax = int(fit_fn(ymax))
+
+    return [(xmin, ymin), (xmax, ymax)]
+</code></pre>
+<pre><code class="language-python"># 对数据进行拟合，返回端点坐标
+if len(left_points) &gt; 0:
+    left_vtx = self.calc_lane_vertices(left_points, 325, img.shape[0])
+    self.left_lane_xy = left_vtx
+    # print(&quot;left:&quot;, self.left_lane_xy)
+
+    cv.line(img, left_vtx[0], left_vtx[1], color, thickness)
+else:
+    self.left_lane_xy = 0
+
+if len(right_points) &gt; 0:
+    right_vtx = self.calc_lane_vertices(right_points, 325, img.shape[0])
+    self.right_lane_xy = right_vtx
+    # print(&quot;right:&quot;, self.right_lane_xy)
+
+    cv.line(img, right_vtx[0], right_vtx[1], color, thickness)
+else:
+    self.right_lane_xy = 0
+</code></pre>
+<figure data-type="image" tabindex="8"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603221033272.png" alt="image-20210603221033272" loading="lazy"></figure>
+<ol start="6">
+<li>
+<p>将车道线与原图整合</p>
+<pre><code class="language-python">res_img = cv.addWeighted(gray, 0.8, line_img, 1, 0)  # 两个图片叠加显示
+</code></pre>
+<figure data-type="image" tabindex="9"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210603222307615.png" alt="image-20210603222307615" loading="lazy"></figure>
+</li>
+</ol>
+<h3 id="二-视频的处理">二、视频的处理</h3>
+<p>将视频流一帧一帧的读取，处理即可</p>
+<pre><code class="language-python">def videopredict(self, vedio_path=None):
+    if vedio_path is None:
+        pass
+    else:
+        cap = cv.VideoCapture(vedio_path)
+        frame_width = int(cap.get(3))  # 960
+        frame_hight = int(cap.get(4))  # 544
+        
+        # 用于输出视频
+        out = cv.VideoWriter(&quot;res_road.avi&quot;, cv.VideoWriter_fourcc(&quot;M&quot;, &quot;J&quot;, &quot;P&quot;, &quot;G&quot;), 30, (frame_width, frame_hight), False)
+        
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if ret:
+                k = cv.waitKey(1)
+                resoult_img = self.predict(frame, show_picture=False)
+                cv.imshow(&quot;resoult_img&quot;, resoult_img)
+                # out.write(resoult_img)  # 可选择   用于输出视频
+
+                if k == ord('q'):
+                    break
+            else:
+                break
+
+        cap.release()
+        out.release()
+        cv.destroyAllWindows()
+</code></pre>
+<video id="video" controls="" preload="none">
+    <source id="mp4" src="images/res_road1.mp4" type="video/mp4">
+</video>
+<h3 id="三-进一步改进">三、进一步改进</h3>
+<p>从视频中可以看出拟合的直线有时会受到地面的影响（视频中的横线）会导致错误的信息</p>
+<p>由于视频每一帧之前的图像变化理应是不会太大的（至少对于车道线来说是不大的），为此我将每一帧拟合直线与y轴的夹角进行对比（左右车道线分开进行），如果两者相差大于一个阈值，则仍然取上一条的拟合直线，这样就相当于增加了一个拟合直线反馈的环节，增加了信息的正确性，而后我又改进了图像进行处理区域，让原本一些间断的帧之间更加平滑。</p>
+<p>拟合直线的反馈检测：</p>
+<pre><code class="language-python">            if len(self.left_coefficient) != 0 and abs(
+                    np.arctan(self.left_coefficient[0]) - np.arctan(left_coefficient[0])) &gt; 0.436:
+                # 0.436为25度的弧度值   0.61   35
+                pass
+            else:
+                self.left_lane_xy = left_vtx
+                self.left_coefficient = left_coefficient
+
+            cv.line(img, self.left_lane_xy[0], self.left_lane_xy[1], color, thickness)
+</code></pre>
+<pre><code class="language-python">            if len(self.right_coefficient) != 0 and abs(
+                    np.arctan(self.right_coefficient[0]) - np.arctan(right_coefficient[0])) &gt; 0.436:
+                pass
+            else:
+                self.right_lane_xy = right_vtx
+                self.right_coefficient = right_coefficient
+
+            cv.line(img, self.right_lane_xy[0], self.right_lane_xy[1], color, thickness)
+</code></pre>
+<p>图像处理区域改进：</p>
+<pre><code class="language-python">    def getROI(self, img):
+        &quot;&quot;&quot;&quot;
+        获取图像内的指定区域，排除其余部分
+        &quot;&quot;&quot;
+        height = img.shape[0]
+        width = img.shape[1]
+        # 三角形区域
+        # triangle = np.array([[(0, height), (width, height), (int(width / 2), int(height / 2))]])
+        # 四边形区域
+        # points = np.array([[[0, height], [width, height], [width, int(height / 4) * 3],
+        #                     [int(width / 2), int(height / 2)], [0, int(height / 4) * 3]]], np.int32)
+        points = np.array([[[0, height], [width, height], [width, int(height / 4) * 3],
+                            [int(width / 2), int(height / 2)]]], np.int32)
+        black_image = np.zeros_like(img)
+        mask = cv.fillPoly(black_image, points, 255)
+        # mask = cv.fillPoly(black_image, triangle, 255)
+        masked_img = cv.bitwise_and(img, mask)
+        return masked_img
+</code></pre>
+<p>改进后的效果如下：</p>
+<p>只增加拟合直线的反馈：</p>
+<video id="video" controls="" preload="none">
+    <source id="mp4" src="images/res_road_25_sanjiao.mp4" type="video/mp4">
+</video>
+<p>增加拟合直线的反馈和区域的改进：</p>
+<video id="video" controls="" preload="none">
+    <source id="mp4" src="images/res_road_25_sibianxing.mp4" type="video/mp4">
+</video>
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jiekeaoteman.github.io/post/python-ren-lian-jian-ce-shi-bie-dlib/">
+                  <h3 class="post-title">
+                    Python 人脸检测识别（dlib）
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

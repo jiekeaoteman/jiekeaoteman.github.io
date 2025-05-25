@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Python 人脸检测识别（dlib） | MZSG</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://jiekeaoteman.github.io/favicon.ico?v=1748160771678">
+<link rel="stylesheet" href="https://jiekeaoteman.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="借鉴于 ：
+连接
+准备
+
+
+
+需要下载：
+
+下载地址
+
+
+
+主要所需库：dlib,open-cv,numpy
+安装dlib时大概是可以通过连接下载再通过pip install安装（我是安装vs后安装成功的）
+源码
+get_frontface..." />
+    <meta name="keywords" content="" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://jiekeaoteman.github.io">
+        <img src="https://jiekeaoteman.github.io/images/avatar.png?v=1748160771678" class="site-logo">
+        <h1 class="site-title">MZSG</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      温故而知新
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://jiekeaoteman.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Python 人脸检测识别（dlib）</h2>
+            <div class="post-date">2022-10-28</div>
+            
+              <div class="feature-container" style="background-image: url('https://gitee.com/jiekeaoteman/blgimg/raw/master/img/jason-leung-DKrNx9YBwvY-unsplash (1).jpg')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <h2 id="借鉴于">借鉴于 ：</h2>
+<p><a href="https://www.cnblogs.com/AdaminXie/p/9010298.html">连接</a></p>
+<h2 id="准备">准备</h2>
+<ol>
+<li></li>
+</ol>
+<p>需要下载：</p>
+<figure data-type="image" tabindex="1"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20210418210307609.png" alt="image-20210418210307609" loading="lazy"></figure>
+<p><a href="http://dlib.net/files/">下载地址</a></p>
+<ol start="2">
+<li></li>
+</ol>
+<p>主要所需库：dlib,open-cv,numpy</p>
+<p>安装dlib时大概是可以通过<a href="https://pypi.org/simple/dlib/">连接</a>下载再通过pip install安装（我是安装vs后安装成功的）</p>
+<h2 id="源码">源码</h2>
+<h3 id="get_frontfacepy">get_frontface.py</h3>
+<pre><code class="language-python"># -*- coding: utf-8 -*- 
+&quot;&quot;&quot;
+Creator: muxis
+Create time: 2021-04-16 19:47
+&quot;&quot;&quot;
+import cv2 as cv
+import os
+import dlib
+import numpy as np
+
+
+class GetFrontface:
+    def __init__(self, facedata_path):
+        self.facedata_path = facedata_path             # 人脸图像储存地址
+        self.person_dir_number = 0                     # 已建立的人脸文件夹个数
+        self.img_of_person_x_number = 0                # 人脸文件夹中的图像个数
+        self.flag_n = 0                                # 标志着是否已经新建存储人脸图像的文件夹
+        self.font = font = cv.FONT_HERSHEY_COMPLEX     # 字体
+
+	
+    def pre_workfloder_mkdir(self):
+        if os.path.isdir(self.facedata_path):
+            pass
+        else:
+            os.mkdir(self.facedata_path)
+
+    def pre_person_x_mkdir(self):
+        if os.listdir(self.facedata_path):
+            person_number_list = []
+            for i in os.listdir(self.facedata_path):
+                j = i.split('_')[-1]
+                person_number_list.append(int(j))
+            self.person_dir_number = max(person_number_list)
+
+    def statements(self, frame):
+        cv.putText(frame, &quot;Face Register&quot;, (20, 40), self.font, 1, (0, 0, 0), 1, cv.LINE_AA)
+        cv.putText(frame, &quot;N: New face folder&quot;, (20, 350), self.font, 0.8, (0, 0, 0), 1, cv.LINE_AA)
+        cv.putText(frame, &quot;S: Save current face&quot;, (20, 400), self.font, 0.8, (0, 0, 0), 1, cv.LINE_AA)
+        cv.putText(frame, &quot;Q: Quit&quot;, (20, 450), self.font, 0.8, (0, 0, 0), 1, cv.LINE_AA)
+
+    def Process(self):
+        self.pre_workfloder_mkdir()
+        self.pre_person_x_mkdir()
+
+        detector = dlib.get_frontal_face_detector()
+        cap = cv.VideoCapture(0)
+        while cap.isOpened():
+            flag, frame = cap.read()
+
+            kk = cv.waitKey(1)
+            if kk == ord('n'):
+                self.person_dir_number += 1
+                person_x_path = self.facedata_path + &quot;/person_&quot; + str(self.person_dir_number)
+                os.mkdir(person_x_path)
+                print(&quot;preson_%d已经创建成功。&quot; % self.person_dir_number)
+                self.flag_n = 1
+
+            if kk == ord('q'):
+                break
+
+            frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+            # 返回检测到的人脸模型 &lt;class 'dlib.dlib.rectangle'&gt;，就是一个矩形
+            rectangles = detector(frame_gray, 0)
+
+            # TODO 当摄像头中出现多个人脸时给与提示，应保持一个人脸正在录入 or 多人脸同时识别
+            # 目前此处rectangles应该尽量为1，多人脸也可以框出，但保存可能出现问题
+            if len(rectangles) != 0:
+                for i in rectangles:
+
+                    hight = i.bottom() - i.top()
+                    wigth = i.right() - i.left()
+                    h = int(hight / 2)
+                    w = int(wigth / 2)
+                    left_up = (i.left() - w, i.top() - h)
+                    right_down = (i.right() + w, i.bottom() + h)
+
+                    # 判断框是否超出640×480
+                    if (i.right() + w &gt; 640) or (i.left() - w &lt; 0) or (i.top() - h &lt; 0) or (i.bottom() + h) &gt; 480:
+                        cv.putText(frame, &quot;OUT OF RANGE!&quot;, (20, 300), self.font, 0.8, (0, 0, 255), 1, cv.LINE_AA)
+                        color_rectangle = (0, 0, 255)
+                        saveable = 0
+                    else:
+                        color_rectangle = (0, 255, 0)
+                        saveable = 1
+                    # 画出人脸的框
+                    cv.rectangle(frame, left_up, right_down, color_rectangle, 2)
+
+                    # 存储框中的人脸
+                    if kk == ord('s'):
+                        if self.flag_n:
+                            if saveable:
+                                self.img_of_person_x_number += 1
+                                # np默认float64
+                                img_blank = np.zeros((2 * hight, 2 * wigth, 3), np.uint8)
+                                for ii in range(2 * hight):
+                                    for jj in range(2 * wigth):
+                                        img_blank[ii, jj] = frame[i.top() - h + ii, i.left() - w + jj]
+                                cv.imwrite(person_x_path + &quot;/&quot; + str(self.img_of_person_x_number) + &quot;.jpg&quot;, img_blank)
+                                print(&quot;图片%d已创建&quot; % int(self.img_of_person_x_number))
+                            else:
+                                print(&quot;Fail to save.Please adjust your position and try again.&quot;)
+                        else:
+                            print(&quot;please press n before save.&quot;)
+            else:
+                pass
+
+            self.statements(frame)
+            cv.imshow(&quot;frame&quot;, frame)
+
+        cap.release()
+        cv.destroyAllWindows()
+
+
+def main():
+    facedata_path = &quot;F:/face_recg/facedata&quot;
+    get_frontface = GetFrontface(facedata_path)
+    get_frontface.Process()
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre>
+<h3 id="face_128d_to_csvpy">face_128D_to_csv.py</h3>
+<pre><code class="language-python"># -*- coding: utf-8 -*- 
+&quot;&quot;&quot;
+Creator: muxis
+Create time: 2021-04-18 09:00
+&quot;&quot;&quot;
+import cv2 as cv
+import dlib
+import os
+from skimage import io # pip安装scipy
+import numpy as np
+import csv
+
+
+# 目前单个只是单个人脸的检测计算
+def return_person_x_128D(person_x_path):
+    detector = dlib.get_frontal_face_detector()
+    predictor = dlib.shape_predictor(&quot;F:/Pycharm-workspace/cv/FACE_AI/data/shape_predictor_68_face_landmarks.dat&quot;)
+    face_rec = dlib.face_recognition_model_v1(&quot;F:/Pycharm-workspace/cv/FACE_AI/data&quot;
+                                              &quot;/dlib_face_recognition_resnet_model_v1.dat&quot;)
+
+    if len(os.listdir(person_x_path)) == 0:
+        print(person_x_path + &quot;该目录下无图片&quot;)
+    else:
+        face_128D = []
+        for i in range(len(os.listdir(person_x_path))):
+            j = str(i + 1)
+            img_rd = io.imread(person_x_path + &quot;/&quot; + j + &quot;.jpg&quot;)
+            rectangle = detector(img_rd, 1)
+            if len(rectangle) == 0:
+                face_128D_from_img = 0
+            else:
+                shape = predictor(img_rd, rectangle[0])
+                face_128D_from_img = face_rec.compute_face_descriptor(img_rd, shape)
+                face_128D.append(face_128D_from_img)
+    mean_person_x_128D = np.array(face_128D).mean(axis=0)
+    return mean_person_x_128D
+
+
+def all_person_data_save(data_path, csvdata_path):
+    with open(csvdata_path, &quot;w&quot;, newline=&quot;&quot;) as csvfile:
+        for i in range(len(os.listdir(data_path))):
+            j = i+1
+            a = return_person_x_128D(data_path + &quot;/person_&quot; + str(j))
+            writer = csv.writer(csvfile)
+            writer.writerow(a)
+            print(&quot;person_%d已经存储完成&quot; % j)
+
+
+def mian():
+    data_path = &quot;F:/face_recg/facedata&quot;
+    csvdata_path = &quot;F:/face_recg/data/features_all.csv&quot;
+    all_person_data_save(data_path, csvdata_path)
+
+
+if __name__ == &quot;__main__&quot;:
+    mian()
+
+</code></pre>
+<h3 id="face_recpy">face_rec.py</h3>
+<pre><code class="language-python"># -*- coding: utf-8 -*- 
+&quot;&quot;&quot;
+Creator: muxis
+Create time: 2021-04-18 16:10
+&quot;&quot;&quot;
+import cv2 as cv
+import dlib
+import numpy as np
+import pandas as pd
+
+
+class FaceRec:
+    def __init__(self, csv_path):
+        self.csv_path = csv_path
+        self.font = font = cv.FONT_HERSHEY_COMPLEX  # 字体
+
+    def statements(self, frame):
+        cv.putText(frame, &quot;Face Recognize&quot;, (20, 40), self.font, 1, (0, 0, 0), 1, cv.LINE_AA)
+        cv.putText(frame, &quot;Q: Quit&quot;, (20, 450), self.font, 0.8, (0, 0, 0), 1, cv.LINE_AA)
+
+    # 计算欧氏距离
+    def euclidean_distance(self, feature1, feature2):
+        feature1 = np.array(feature1)
+        feature2 = np.array(feature2)
+        distance = np.sqrt(np.sum(np.square(feature1 - feature2)))
+        return distance
+
+    def get_data_from_csv(self):
+        csv = pd.read_csv(self.csv_path, header=None)
+        person_known_128D = []
+        for i in range(csv.shape[0]):
+            person_x_128D = []
+            for j in range(128):
+                person_x_128D.append(csv.iloc[i, :][j])
+            person_known_128D.append(person_x_128D)
+        return person_known_128D
+
+    def Pross(self, cap):
+        detector = dlib.get_frontal_face_detector()
+        predictor = dlib.shape_predictor(&quot;F:/Pycharm-workspace/cv/FACE_AI/data/shape_predictor_68_face_landmarks.dat&quot;)
+        face_rec = dlib.face_recognition_model_v1(&quot;F:/Pycharm-workspace/cv/FACE_AI/data&quot;
+                                                  &quot;/dlib_face_recognition_resnet_model_v1.dat&quot;)
+        while cap.isOpened():
+            ret, frame = cap.read()
+            kk = cv.waitKey(1)
+            if kk == ord(&quot;q&quot;):
+                break
+
+            rectangles = detector(frame, 0)
+            if len(rectangles) != 0:
+                for i in rectangles:
+                    hight = i.bottom() - i.top()
+                    wigth = i.right() - i.left()
+                    h = int(hight / 2)
+                    w = int(wigth / 2)
+                    left_up = (i.left() - w, i.top() - h)
+                    right_down = (i.right() + w, i.bottom() + h)
+                    pose_name = (i.left(), int(i.bottom() + (i.bottom() - i.top()) / 4))
+
+                    # 画出人脸的框
+                    cv.rectangle(frame, left_up, right_down, (0, 255, 0), 2)
+
+                    # 计算128D
+                    shape = predictor(frame, rectangles[0])
+                    face_128D_from_img = face_rec.compute_face_descriptor(frame, shape)
+
+                    person_known_128D = self.get_data_from_csv()
+                    name = &quot;unknown&quot;
+                    for ii in range(len(person_known_128D)):
+                        d = self.euclidean_distance(person_known_128D[ii], face_128D_from_img)
+                        if d &lt; 0.4:
+                            name = &quot;perxon_&quot; + str(ii + 1)
+                    # 写上名字
+                    cv.putText(frame, name, pose_name, self.font, 1, (255, 255, 255), 1, cv.LINE_AA)
+
+            # statements
+            self.statements(frame)
+            cv.imshow(&quot;frame&quot;, frame)
+
+
+def main():
+    csv_path = &quot;F:/face_recg/data/features_all.csv&quot;
+    face_rec = FaceRec(csv_path)
+    cap = cv.VideoCapture(0)
+    face_rec.Pross(cap)
+    # cap.set(3, 480) 这里应该默认是640×480
+    cap.release()
+    cv.destroyAllWindows()
+
+
+if __name__ == '__main__':
+    main()
+
+</code></pre>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jiekeaoteman.github.io/post/personal-config-and-minor-questions/">
+                  <h3 class="post-title">
+                    Personal config and minor questions
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

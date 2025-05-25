@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>创建个人博客的记录 | MZSG</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://jiekeaoteman.github.io/favicon.ico?v=1748160771678">
+<link rel="stylesheet" href="https://jiekeaoteman.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="一、 注册GitHub账号，建立仓库
+
+
+参考链接： 如何在 GitHub 上写博客？   GitHub Pages帮助页面
+
+
+GitHub宣布，自2020年10月1日起，在GitHub平台上创建的所有源代码存储库都将默认命名为 main..." />
+    <meta name="keywords" content="" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://jiekeaoteman.github.io">
+        <img src="https://jiekeaoteman.github.io/images/avatar.png?v=1748160771678" class="site-logo">
+        <h1 class="site-title">MZSG</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      温故而知新
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://jiekeaoteman.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">创建个人博客的记录</h2>
+            <div class="post-date">2022-10-28</div>
+            
+              <div class="feature-container" style="background-image: url('https://gitee.com/jiekeaoteman/blgimg/raw/master/img/NzAwODE0ODlfMTEyMTY2MTQ3NTI=_7.webp.jpg')">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <h2 id="一-注册github账号建立仓库">一、 注册GitHub账号，建立仓库</h2>
+<ul>
+<li>
+<p>参考链接： <a href="https://www.zhihu.com/question/20962496">如何在 GitHub 上写博客？</a>   <a href="https://help.github.com/cn/github/working-with-github-pages">GitHub Pages帮助页面</a></p>
+</li>
+<li>
+<p>GitHub宣布，自2020年10月1日起，在GitHub平台上创建的所有源代码存储库都将默认命名为 main ，而非原本的 master  所以在一些老的教程会看到master</p>
+</li>
+<li>
+<p>为什么取仓库名字为username.github.io？</p>
+<figure data-type="image" tabindex="1"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121104551018.png" alt="image-20201121104551018" loading="lazy"></figure>
+</li>
+<li>
+<p>建立仓库后会选择主题，在我尝试使用jekyll主题后我发现我下载的主题还要进行一些文件的配置，我嫌麻烦就放弃了，也可能是我下载的主题自带了一些原主人的东西</p>
+</li>
+<li>
+<p>接下来我去学习了git的使用以及下载了githubdesktop（后面没有使用，但是git是需要下载的）</p>
+<p>附我学习的视频连接<a href="https://www.bilibili.com/video/BV1Zz4y1C7vg?p=1">【2021年Git全集教程】大牛4小时带你精通Git玩转GitHub（最新版）</a></p>
+<pre><code> 笔记   链接：https://pan.baidu.com/s/1NZxaQOZPjJUcFQsSub0q-g   提取码：1c0y
+</code></pre>
+</li>
+</ul>
+<h2 id="二-使用gridea同步blog和picgo上传图片">二、 使用Gridea同步blog和PicGo上传图片</h2>
+<ul>
+<li>
+<p>我是使用gitee仓库做的图床，github pages上发博客</p>
+<p>因为gitee是国内的所以访问速度会比github更加快一点，所以把图片资源放到gitee上去</p>
+<p>ps：我之前使用github的图床时使用picgo生成的链接没法用</p>
+<p>至于在github上发布blog是因为github受众广，稳定</p>
+</li>
+<li>
+<p>注册一个gitee账号，建立仓库     <a href="https://gitee.com/help/articles/4169">参考连接</a></p>
+</li>
+<li>
+<p><a href="https://git-scm.com/downloads">git安装地址</a>      <a href="https://gridea.dev/">gridea安装地址</a>  这个安装问题应该不大</p>
+</li>
+</ul>
+<h3 id="配置gridea">配置Gridea</h3>
+<p>Gridea是一个静态的博客写作客户端，你可以在上面同步你的blog</p>
+<p>接下来要进行一定的配置</p>
+<figure data-type="image" tabindex="2"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121115616587.png" alt="image-20201121115616587" loading="lazy"></figure>
+<p>令牌获取：</p>
+<figure data-type="image" tabindex="3"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121144809276.png" alt="image-20201121144809276" loading="lazy"></figure>
+<figure data-type="image" tabindex="4"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121144852697.png" alt="image-20201121144852697" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121144928730.png" alt="image-20201121144928730" loading="lazy"></figure>
+<p>点击右上方的Generate new token，在Note输入对Token的描述或备注，勾选下方的repo生成即可。注意这个token只能看到这一次，最好记录下来。</p>
+<p>将token输入令牌一栏后保存，点击远程连接测试，提示连接成功完成配置，失败则检查上面的配置信息</p>
+<h3 id="配置picgo">配置PicGo</h3>
+<p>要先下载最新版Node.js  <a href="https://nodejs.org/en/download/">Node.js下载</a>  还需要npm（新版的Node.js中一般自带npm）</p>
+<p>可以通过window终端输入<code>node -v</code> 和<code>npm -v</code>  看是否安装成功</p>
+<p>下载PicGo   点击 <a href="https://picgo.github.io/PicGo-Doc/zh/guide/">PicGo</a> 里面有帮助文档和下载</p>
+<figure data-type="image" tabindex="6"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121150736993.png" alt="image-20201121150736993" loading="lazy"></figure>
+<p>打开PicGo在插件设置中搜索gitee（因为picgo软件未带上传gitee的部分需要下载插件）</p>
+<figure data-type="image" tabindex="7"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121150936036.png" alt="image-20201121150936036" loading="lazy"></figure>
+<p>安装gitee-uploader，安装好了以后重启，打开图床设置中的gitee</p>
+<figure data-type="image" tabindex="8"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121151807061.png" alt="image-20201121151807061" loading="lazy"></figure>
+<p>设为默认图床</p>
+<p>获取gitee的token方法跟github差不多：设置-&gt;私人令牌-&gt;生成新令牌即可</p>
+<p>此时可以在上传区上图片试试了，上传后应该打开gitee仓库就能看到图片文件</p>
+<h2 id="三-使用typora写博文图片插入即时上传并生成连接">三、 使用Typora写博文，图片插入即时上传并生成连接</h2>
+<ul>
+<li>下载新版Typora（一些老版的没有图片上传功能），安装很简单。    <a href="https://typora.io/">Typora下载</a></li>
+<li>md语法基本看上不到10分钟就能会，可自行百度</li>
+<li>文件-&gt;偏好设置-&gt;图像</li>
+<li>文件-&gt;偏好设置-&gt;图像</li>
+</ul>
+<figure data-type="image" tabindex="9"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121155207168.png" alt="image-20201121155207168" loading="lazy"></figure>
+<p>这样你可以在写文章时直接把图片粘贴进来，他会自动上传至gitee，并且生成连接</p>
+<p>（其实gridea内置了编辑器，但是我觉得没有typora好用）</p>
+<p>写完文章我一般都是将Typora中的内容复制到Gridea中去，使用Gridea来生成文章。因为一些头文件的规范直接放在源文件的posts中可能导致gridea解析出错，然后预览，没问题同步即可。</p>
+<h2 id="四-gridea主题">四、 Gridea主题</h2>
+<h3 id="下载并更换主题">下载并更换主题</h3>
+<p><a href="https://gridea.dev/themes">主题市场</a> 选择一个自己喜欢的主题下载</p>
+<figure data-type="image" tabindex="10"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121161611089.png" alt="image-20201121161611089" loading="lazy"></figure>
+<p>点击下找到站点源文件，将下载的主题文件夹（下载的东西可能还有一些帮助文档啥的）放到站点源文件的themes里就好了，之后预览，同步，打开博客时可能会出现混乱，可以尝试Ctrl+F5刷新</p>
+<p>tips：</p>
+<p>F5刷新按钮只对当前页面进行刷新，只刷新本地缓存；</p>
+<p>Ctrl + F5 的行为也是刷新页面，但是会把浏览器中的临时文件夹的文件删除再重新从服务器下载。<br>
+比如某网站更新了 style.css 文件，如果单纯按 F5 刷新，那么当前页面还是使用未修改的 style.css 文件内容，如果按 Ctrl + F5 就会重新从服务器下载 style.css 文件，并使用修改后的 style.css 文件。</p>
+<h3 id="主题的一些其他配置以我下载的fog主题为例">主题的一些其他配置（以我下载的Fog主题为例）</h3>
+<ul>
+<li>Valine评论配置</li>
+</ul>
+<p>​        已注册lencloud  已使用npm下载Valine   ------&gt;未完成</p>
+<p>​        npm安装过慢使用淘宝服务器下载   以下载jquery为例</p>
+<p>​        <code>npm install jquery --registry=https://registry.npm.taobao.org</code></p>
+<p>​        或者执行这行命令， npm 会从淘宝镜像下载包了，速度会比原来快很多</p>
+<p>​        <code>npm config set -g registry https:*//registry.npm.taobao.org* </code></p>
+<ul>
+<li>
+<p>更换看板娘  ------&gt; 未完成</p>
+</li>
+<li>
+<p>文章热度一 直loding  查看主题帮助文档得：进入leancloud项目下，查看 部署-结构化数据 是否有Counter</p>
+</li>
+</ul>
+<p>​        如果没有，创建一个新的Class，名称为Counter------&gt;未完成</p>
+<hr>
+<hr>
+<p>上面部分基本已经搭建起来了个人博客，实现了更新文章等基本功能</p>
+<p>下面是我想要 双线部署博客到到 Coding Pages 和 GitHub Pages 这需要一个自己的域名（可以阿里云腾讯云上花几块钱买一个便宜的域名）不买域名也可以将你的博客再部署到coding的静态网站上（毕竟国内访问速度快）</p>
+<h2 id="五-部署blog到coding">五、 部署blog到coding</h2>
+<p>注册coding账号，因为coding取消了个人版，所以要先创建一个团队，团队名根据自己起一个就行<img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121170914469.png" alt="image-20201121170914469" loading="lazy"></p>
+<figure data-type="image" tabindex="11"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121171235012.png" alt="image-20201121171235012" loading="lazy"></figure>
+<p>选择创建代码托管项目----&gt;填好项目名称会自动生成项目标识----&gt;完成创建</p>
+<figure data-type="image" tabindex="12"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121171552758.png" alt="image-20201121171552758" loading="lazy"></figure>
+<p>点击左下角的项目设置<img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121181331328.png" alt="image-20201121181331328" loading="lazy"></p>
+<p>在项目设置 &gt; 项目与成员 &gt; 功能开关内打开持续集成，持续部署</p>
+<figure data-type="image" tabindex="13"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121181604295.png" alt="image-20201121181604295" loading="lazy"></figure>
+<p>在左边持续部署中选择静态网站 &gt; 创建静态网站   节点选择香港在绑定域名时可以不用备案</p>
+<figure data-type="image" tabindex="14"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121181852007.png" alt="image-20201121181852007" loading="lazy"></figure>
+<p>在这你可以看到静态网站的地址</p>
+<figure data-type="image" tabindex="15"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121183414215.png" alt="image-20201121183414215" loading="lazy"></figure>
+<p>获取coding 的token   之后勾选project:depot权限完成 （注意保存token，他之后没有办法查看忘了只能重新建立）</p>
+<figure data-type="image" tabindex="16"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121182449908.png" alt="image-20201121182449908" loading="lazy"></figure>
+<p>完成以后再打开Gridea点击远程  &gt; 进行coding pages的配置</p>
+<figure data-type="image" tabindex="17"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121183844678.png" alt="image-20201121183844678" loading="lazy"></figure>
+<p>远程连接检测 &gt; 同步即可    之后就可以打开之前静态网站的地址看一下自己的blog了</p>
+<h2 id="六-双线部署博客到到-coding-pages-和-github-pages">六、 双线部署博客到到 Coding Pages 和 GitHub Pages</h2>
+<p>标题的意思是通过一个域名分别绑定Coding和GitHub，在dns解析时设置国内ip访问域名时转到Coding国外ip访问域名时转到GitHub。不过我最后没有完成，因为Coding Pages从旧版更新以后如果要绑定自定义域名就必须使用腾讯云的cdn加速，这个项目是要收费的，所以我最终没有实现双线部署。就只绑定了GitHub Pages</p>
+<ul>
+<li>
+<p>域名绑定GitHub Pages</p>
+<p>进入仓库，选择Setting</p>
+<figure data-type="image" tabindex="18"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121194948373.png" alt="image-20201121194948373" loading="lazy"></figure>
+<p>然后下拉找到GitHub Pages里的Custom domain</p>
+<figure data-type="image" tabindex="19"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121195327094.png" alt="image-20201121195327094" loading="lazy"></figure>
+<p>之后他应该会自动生成一个CNAME（大写）的文件里面应该有你的域名，如果没有请自行创建并填写域名。</p>
+<figure data-type="image" tabindex="20"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121195639379.png" alt="image-20201121195639379" loading="lazy"></figure>
+<p>在Gridea的远程配置中CNAME添加自己的域名，不然每次同步后Github Pages的Custom domain会消失，接下来你就没法通过域名访问博客了</p>
+<p>新注册了一个域名后,并无法直接使用,而要访问网络上的服务器,必须通过服务器的IP，因此接下来要进行DNS解析。</p>
+<p>因为我是在腾讯云买的域名因此我以在腾讯云解析为例</p>
+</li>
+</ul>
+<figure data-type="image" tabindex="21"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121201259936.png" alt="image-20201121201259936" loading="lazy"></figure>
+<p>主机记录：一般选@就可以本来我的一个地址是https://xxxxxxx.com如果主机记录为@那么记录值选择xxxxxx.com就可以了</p>
+<figure data-type="image" tabindex="22"><img src="https://gitee.com/jiekeaoteman/blgimg/raw/master/img/image-20201121201359980.png" alt="image-20201121201359980" loading="lazy"></figure>
+<p>TTL：  Time To Live  这个值越大修改解析后等待生效的时间越长，但是不能设置的太小，太小了域名解析的稳定性和解析速度收到影响</p>
+<p>默认即可  600为600秒。添加上就可以通过你的域名访问你的博客了。</p>
+<p>这里解释一下DNS解析是让你的域名可以找到你博客的地址，而想要让你的博客接受你这个域名的访问就必须进行添加CNAME</p>
+
+            </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://jiekeaoteman.github.io/post/hello-gridea/">
+                  <h3 class="post-title">
+                    Hello Gridea
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>
